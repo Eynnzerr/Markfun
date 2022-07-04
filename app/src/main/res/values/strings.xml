@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">MemoryMarkdown</string>
+
+    <!--  HomeScreen.kt  -->
+    <string name="home_hint">Choose md file to read or write by yourself!</string>
+
+    <!--  WriteScreen.kt  -->
+    <string name="write_title_holder">Title Here.</string>
+    <string name="write_content_holder">Enjoy your MarkDown now!</string>
+    <string name="write_exit_notice">Do you want to save craft?</string>
+    <string name="write_cancel">No</string>
+    <string name="write_confirm">Yes</string>
+</resources>
