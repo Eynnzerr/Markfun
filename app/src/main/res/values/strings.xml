@@ -10,4 +10,9 @@
     <string name="write_exit_notice">Do you want to save craft?</string>
     <string name="write_cancel">No</string>
     <string name="write_confirm">Yes</string>
+    <string name="write_insert_image_title">Insert an image</string>
+    <string name="write_img_url">from URL</string>
+    <string name="write_img_gallery">from Gallery</string>
+    <string name="write_img_name_holder">Input picture name.</string>
+    <string name="write_img_name_label">name</string>
 </resources>

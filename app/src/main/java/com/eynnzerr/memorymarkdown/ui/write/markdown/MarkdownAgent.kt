@@ -1,12 +1,16 @@
 package com.eynnzerr.memorymarkdown.ui.write.markdown
 
 import com.eynnzerr.memorymarkdown.base.CPApplication
+import com.eynnzerr.memorymarkdown.ui.write.markdown.edithandler.CodeInlineHandler
 import com.eynnzerr.memorymarkdown.ui.write.markdown.edithandler.HeaderHandler
+import com.eynnzerr.memorymarkdown.ui.write.markdown.edithandler.StrikethroughHandler
 import io.noties.markwon.Markwon
 import io.noties.markwon.editor.MarkwonEditor
 import io.noties.markwon.editor.handler.EmphasisEditHandler
 import io.noties.markwon.editor.handler.StrongEmphasisEditHandler
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
+import org.qosp.notes.ui.editor.markdown.QuoteHandler
+import org.qosp.notes.ui.editor.markdown.CodeBlockHandler
 import javax.inject.Inject
 
 
@@ -21,10 +25,10 @@ class MarkdownAgent @Inject constructor() {
         MarkwonEditor.builder(markwon)
             .useEditHandler(EmphasisEditHandler())
             .useEditHandler(StrongEmphasisEditHandler())
-//        .useEditHandler(CodeHandler())
-//        .useEditHandler(CodeBlockHandler())
-//        .useEditHandler(BlockQuoteHandler())
-//        .useEditHandler(StrikethroughHandler())
+            .useEditHandler(CodeInlineHandler())
+            .useEditHandler(CodeBlockHandler())
+            .useEditHandler(QuoteHandler())
+            .useEditHandler(StrikethroughHandler())
             .useEditHandler(HeaderHandler())
             .build()
     }

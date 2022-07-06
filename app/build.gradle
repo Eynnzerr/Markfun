@@ -62,6 +62,10 @@ dependencies {
     implementation "io.noties.markwon:core:$markwon_version"
     implementation "io.noties.markwon:ext-strikethrough:$markwon_version"
     implementation "io.noties.markwon:editor:$markwon_version"
+    implementation "io.noties.markwon:ext-tables:$markwon_version"
+    implementation "io.noties.markwon:ext-tasklist:$markwon_version"
+    implementation "io.noties.markwon:image:$markwon_version"
+    implementation "io.noties.markwon:image-glide:$markwon_version"
 
     // icons extended
     implementation "androidx.compose.material:material-icons-extended:$compose_version"

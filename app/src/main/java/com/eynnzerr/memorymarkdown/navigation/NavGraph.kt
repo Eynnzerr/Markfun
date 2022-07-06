@@ -11,6 +11,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.eynnzerr.memorymarkdown.ui.home.HomeScreen
+import com.eynnzerr.memorymarkdown.ui.home.HomeViewModel
 import com.eynnzerr.memorymarkdown.ui.write.WriteScreen
 import com.eynnzerr.memorymarkdown.ui.write.WriteViewModel
 
@@ -33,22 +34,17 @@ fun NavGraph(
         route = "root"
     ) {
         composable(Destinations.HOME_ROUTE) {
+            val homeViewModel: HomeViewModel = hiltViewModel()
             HomeScreen(
-                navController = navHostController
+                navController = navHostController,
+                viewModel = homeViewModel
             )
         }
         composable(Destinations.WRITE_ROUTE) {
             val writeViewModel: WriteViewModel = hiltViewModel()
-            val uiState by writeViewModel.uiState.collectAsState()
             WriteScreen(
                 navController = navHostController,
-                editor = writeViewModel.getEditor(),
-                uiState = uiState,
-                optionList = writeViewModel.optionList,
-                onStateChange = writeViewModel::updateUiState,
-                saveCraft = writeViewModel::saveCraft,
-                removeCraft = writeViewModel::emptyCraft,
-                saveFile = writeViewModel::saveMarkdown
+                viewModel = writeViewModel
             )
         }
     }
