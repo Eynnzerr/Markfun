@@ -234,7 +234,7 @@ fun WriteScreen(
                 actions = {
                     IconButton(onClick = {
                         // Save as
-                        saveFile.launch(viewModel.uiState.value.title + ".txt")
+                        saveFile.launch(viewModel.uiState.value.title + ".md")
                         navController.navigateTo(Destinations.HOME_ROUTE)
                     }) {
                         Icon(
@@ -247,8 +247,8 @@ fun WriteScreen(
                         // Save/Stash to private folder
                         viewModel.stashFile()
                         viewModel.saveMarkdown()
-                        Toast.makeText(context, "Done.", Toast.LENGTH_SHORT).show()
                         navController.navigateTo(Destinations.HOME_ROUTE)
+                        keyboard?.hide()
                     }) {
                         Icon(
                             imageVector = Icons.Filled.Done,

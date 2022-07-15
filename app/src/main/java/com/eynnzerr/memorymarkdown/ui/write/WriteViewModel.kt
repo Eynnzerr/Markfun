@@ -69,7 +69,7 @@ class WriteViewModel @Inject constructor(
     }
 
     fun stashFile() {
-        val basePath = CPApplication.context.getExternalFilesDir(null)?.absolutePath + "/files/markdown"
+        val basePath = CPApplication.context.getExternalFilesDir(null)?.absolutePath
         val fileName = if (_uiState.value.title == "") "new.md" else _uiState.value.title + ".md"
         val filePath = basePath + fileName
         val mdFile = File(filePath).apply {
