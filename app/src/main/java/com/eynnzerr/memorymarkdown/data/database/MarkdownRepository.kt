@@ -8,6 +8,8 @@ class MarkdownRepository @Inject constructor() {
 
     fun getAllMdFlow() = dao.getLocalMarkdown()
 
+    fun getContentByTitle(title: String) = dao.getContentByTitle(title)
+
     suspend fun insertMarkdown(vararg markdown: MarkdownData) = dao.insertMarkdown(*markdown)
 
     suspend fun deleteMarkdown(vararg markdown: MarkdownData) = dao.deleteMarkdown(*markdown)

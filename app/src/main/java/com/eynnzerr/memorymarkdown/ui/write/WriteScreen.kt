@@ -7,12 +7,15 @@ import android.text.TextWatcher
 import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
-import android.widget.Toast
+import android.widget.TextView
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -31,9 +34,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavHostController
 import com.eynnzerr.memorymarkdown.R
+import com.eynnzerr.memorymarkdown.utils.UriUtils
 import com.eynnzerr.memorymarkdown.navigation.Destinations
 import com.eynnzerr.memorymarkdown.navigation.navigateTo
 import com.eynnzerr.memorymarkdown.ui.theme.IconButtonColor
+import com.eynnzerr.memorymarkdown.ui.theme.IconColor
 import io.noties.markwon.editor.MarkwonEditorTextWatcher
 import java.util.concurrent.Executors
 
@@ -46,8 +51,10 @@ fun WriteScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val editor = viewModel.getEditor()
+    val markwon = viewModel.getMarkwon()
     val optionList = viewModel.optionList
 
+    var contentChanged by remember { mutableStateOf(false) }
     var insertImage by remember { mutableStateOf(false) }
     var imageName by remember { mutableStateOf("") }
     var isDialogOpen by remember { mutableStateOf(false) }
@@ -60,6 +67,17 @@ fun WriteScreen(
         // TODO 回调从来没执行过？ 并且这个无参构造都已经被弃用了，我这还能用？
         if (uri == null) Log.d(TAG, "WriteScreen: uri is null.")
         uri?.let { viewModel.saveFileAs(it) }
+    }
+
+    BackHandler {
+        UriUtils.run {
+            if (isUriValid) {
+                uri = null
+                isUriValid = false
+            }
+        }
+        if (contentChanged) isDialogOpen = true // 本地新建文件且内容改变时才提示是否保存草稿
+        else navController.navigateTo(Destinations.HOME_ROUTE)
     }
 
     if (insertImage) {
@@ -164,6 +182,12 @@ fun WriteScreen(
                         // saveCraft()
                         viewModel.saveCraft()
                         isDialogOpen = false
+                        UriUtils.run {
+                            if (isUriValid) {
+                                uri = null
+                                isUriValid = false
+                            }
+                        }
                         navController.navigateTo(Destinations.HOME_ROUTE)
                         keyboard?.hide()
                     },
@@ -191,6 +215,12 @@ fun WriteScreen(
                         // removeCraft()
                         viewModel.emptyCraft()
                         isDialogOpen = false
+                        UriUtils.run {
+                            if (isUriValid) {
+                                uri = null
+                                isUriValid = false
+                            }
+                        }
                         navController.navigateTo(Destinations.HOME_ROUTE)
                         keyboard?.hide()
                     },
@@ -222,7 +252,8 @@ fun WriteScreen(
                 title = {},
                 navigationIcon = {
                     IconButton(onClick = {
-                        isDialogOpen = true
+                        if (contentChanged) isDialogOpen = true
+                        else navController.navigateTo(Destinations.HOME_ROUTE)
                     }) {
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,
@@ -232,64 +263,85 @@ fun WriteScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = {
-                        // Save as
-                        saveFile.launch(viewModel.uiState.value.title + ".md")
-                        navController.navigateTo(Destinations.HOME_ROUTE)
-                    }) {
-                        Icon(
-                            imageVector = Icons.Filled.SaveAs,
-                            contentDescription = null,
-                            tint = IconButtonColor
-                        )
-                    }
-                    IconButton(onClick = {
-                        // Save/Stash to private folder
-                        viewModel.stashFile()
-                        viewModel.saveMarkdown()
-                        navController.navigateTo(Destinations.HOME_ROUTE)
-                        keyboard?.hide()
-                    }) {
-                        Icon(
-                            imageVector = Icons.Filled.Done,
-                            contentDescription = null,
-                            tint = IconButtonColor
-                        )
+                    AnimatedVisibility(visible = !uiState.isReadOnly) {
+                        Row {
+                            IconButton(onClick = {
+                                // Save as
+                                saveFile.launch(viewModel.uiState.value.title + ".md")
+                                navController.navigateTo(Destinations.HOME_ROUTE)
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Filled.SaveAs,
+                                    contentDescription = null,
+                                    tint = IconButtonColor
+                                )
+                            }
+                            IconButton(onClick = {
+                                // Save/Stash to private folder
+                                viewModel.stashFile()
+                                viewModel.saveMarkdown()
+                                navController.navigateTo(Destinations.HOME_ROUTE)
+                                keyboard?.hide()
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Done,
+                                    contentDescription = null,
+                                    tint = IconButtonColor
+                                )
+                            }
+                        }
                     }
                 }
             )
         },
         bottomBar = {
-            Surface(
-                shadowElevation = 10.dp,
-                modifier = Modifier.autoImePadding(isContentFocused)
-            ) {
-                LazyRow(
-                    modifier = Modifier.navigationBarsPadding(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+            AnimatedVisibility(visible = !uiState.isReadOnly) {
+                Surface(
+                    shadowElevation = 10.dp,
+                    modifier = Modifier.autoImePadding(isContentFocused)
                 ) {
-                    item {
-                        IconButton(
-                            onClick = { insertImage = true },
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.option_image),
-                                contentDescription = null
-                            )
+                    LazyRow(
+                        modifier = Modifier.navigationBarsPadding(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        item {
+                            IconButton(
+                                onClick = { insertImage = true },
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.option_image),
+                                    contentDescription = null
+                                )
+                            }
                         }
-                    }
 
-                    items(optionList) { option ->
-                        IconButton(
-                            onClick = option.action,
-                        ) {
-                            Icon(
-                                painter = painterResource(id = option.iconResource),
-                                contentDescription = null
-                            )
+                        items(optionList) { option ->
+                            IconButton(
+                                onClick = option.action,
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = option.iconResource),
+                                    contentDescription = null
+                                )
+                            }
                         }
                     }
                 }
+            }
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    viewModel.updateMode()
+                    if (uiState.isReadOnly) keyboard?.hide()
+                },
+                shape = CircleShape
+            ) {
+                Icon(
+                    imageVector = if (uiState.isReadOnly) Icons.Filled.Edit else Icons.Filled.Watch,
+                    contentDescription = null,
+                    tint = IconColor
+                )
             }
         }
     ) {
@@ -298,77 +350,99 @@ fun WriteScreen(
                 .fillMaxSize()
                 .padding(it)
         ) {
-            TextField(
-                value = uiState.title,
-                onValueChange = { newInput -> viewModel.updateTitle(newInput) },
-                placeholder = {
-                    Text(
-                        text = stringResource(id = R.string.write_title_holder),
-                        style = MaterialTheme.typography.headlineLarge
-                    )
-                },
-                colors = TextFieldDefaults.textFieldColors(
-                    containerColor = Color.Transparent,
-                    disabledTextColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent
-                ),
-                maxLines = 1,
-                textStyle = MaterialTheme.typography.headlineLarge,
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
-            )
-
-            AndroidView(
-                factory = { context ->
-                    EditText(context).also { editText ->
-                        editText.setText(uiState.content)
-                        editText.hint = "Enjoy your MarkDown now!"
-                        editText.background = null
-                        editText.addTextChangedListener(MarkwonEditorTextWatcher.withPreRender(
-                            editor,
-                            Executors.newCachedThreadPool(),
-                            editText
-                        ))
-                        editText.addTextChangedListener(object: TextWatcher {
-                            override fun beforeTextChanged(
-                                s: CharSequence?,
-                                start: Int,
-                                count: Int,
-                                after: Int
-                            ) {
-                            }
-
-                            override fun onTextChanged(
-                                s: CharSequence?,
-                                start: Int,
-                                before: Int,
-                                count: Int
-                            ) {
-                            }
-
-                            override fun afterTextChanged(s: Editable?) {
-                                if (editText.text.toString() != uiState.content) // avoid dead loop
-                                    viewModel.updateContent(s.toString())
-                            }
-
-                        })
-                        editText.setOnFocusChangeListener { _, hasFocus -> isContentFocused = hasFocus }
+            if (uiState.isReadOnly) {
+                Text(
+                    text = uiState.title,
+                    style = MaterialTheme.typography.headlineLarge,
+                    modifier = Modifier.padding(horizontal = 13.dp),
+                    maxLines = 1
+                )
+                AndroidView(
+                    factory = { context ->
+                        TextView(context).also { textView ->
+                            markwon.setMarkdown(textView, uiState.content)
+                        }
+                    },
+                    modifier = Modifier.padding(13.dp),
+                    update = { textView ->
+                        markwon.setMarkdown(textView, uiState.content)
                     }
-                },
-                modifier = Modifier.padding(13.dp),
-                update = { editText ->
-                    if (editText.text.toString() != uiState.content) {
-                        // avoid dead loop
-                        editText.setText(uiState.content)
-                        editText.setSelection(editText.text.length)
-                        if (!editText.isFocused) {
-                            editText.requestFocus()
-                            inputManager.showSoftInput(editText, 0)
+                )
+            }
+            else {
+                TextField(
+                    value = uiState.title,
+                    onValueChange = { newInput -> viewModel.updateTitle(newInput) },
+                    placeholder = {
+                        Text(
+                            text = stringResource(id = R.string.write_title_holder),
+                            style = MaterialTheme.typography.headlineLarge
+                        )
+                    },
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color.Transparent,
+                        disabledTextColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent
+                    ),
+                    maxLines = 1,
+                    textStyle = MaterialTheme.typography.headlineLarge,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
+                )
+
+                AndroidView(
+                    factory = { context ->
+                        EditText(context).also { editText ->
+                            editText.setText(uiState.content)
+                            editText.hint = "Enjoy your MarkDown now!"
+                            editText.background = null
+                            editText.addTextChangedListener(MarkwonEditorTextWatcher.withPreRender(
+                                editor,
+                                Executors.newCachedThreadPool(),
+                                editText
+                            ))
+                            editText.addTextChangedListener(object: TextWatcher {
+                                override fun beforeTextChanged(
+                                    s: CharSequence?,
+                                    start: Int,
+                                    count: Int,
+                                    after: Int
+                                ) {
+                                }
+
+                                override fun onTextChanged(
+                                    s: CharSequence?,
+                                    start: Int,
+                                    before: Int,
+                                    count: Int
+                                ) {
+                                }
+
+                                override fun afterTextChanged(s: Editable?) {
+                                    if (editText.text.toString() != uiState.content) // avoid dead loop
+                                        viewModel.updateContent(s.toString())
+                                    contentChanged = true
+                                }
+
+                            })
+                            editText.setOnFocusChangeListener { _, hasFocus -> isContentFocused = hasFocus }
+                        }
+                    },
+                    modifier = Modifier.padding(13.dp),
+                    update = { editText ->
+                        if (editText.text.toString() != uiState.content) {
+                            // avoid dead loop
+                            editText.setText(uiState.content)
+                            editText.setSelection(editText.text.length)
+                            if (!editText.isFocused) {
+                                editText.requestFocus()
+                                inputManager.showSoftInput(editText, 0)
+                            }
                         }
                     }
-                }
-            )
+                )
+            }
         }
     }
 }

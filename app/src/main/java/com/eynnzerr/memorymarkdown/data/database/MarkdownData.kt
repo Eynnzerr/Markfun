@@ -2,7 +2,6 @@ package com.eynnzerr.memorymarkdown.data.database
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.eynnzerr.memorymarkdown.ui.write.Markdown
 
 @Entity(tableName = "markdown")
 data class MarkdownData(
@@ -20,4 +19,4 @@ data class MarkdownData(
     }
 }
 
-fun Markdown.toData() = MarkdownData(title = title, content = content)
+// fun Markdown.toData() = MarkdownData(title = title, content = content)

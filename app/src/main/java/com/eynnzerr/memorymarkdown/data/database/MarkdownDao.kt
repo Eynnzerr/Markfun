@@ -12,6 +12,9 @@ interface MarkdownDao {
     @Query("SELECT * FROM markdown")
     fun getLocalMarkdown(): Flow<List<MarkdownData>>
 
+    @Query("SELECT content FROM markdown WHERE title = :title")
+    fun getContentByTitle(title: String): Flow<String>
+
     @Insert
     suspend fun insertMarkdown(vararg markdown: MarkdownData)
 

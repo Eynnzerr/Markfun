@@ -1,8 +1,6 @@
 package com.eynnzerr.memorymarkdown.ui.home
 
 import android.annotation.SuppressLint
-import android.net.Uri
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
@@ -21,14 +19,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.eynnzerr.memorymarkdown.R
-import com.eynnzerr.memorymarkdown.UriUtils
+import com.eynnzerr.memorymarkdown.utils.UriUtils
 import com.eynnzerr.memorymarkdown.navigation.Destinations
 import com.eynnzerr.memorymarkdown.navigation.navigateTo
 import com.eynnzerr.memorymarkdown.ui.theme.IconButtonColor
@@ -58,14 +55,12 @@ fun HomeScreen(
     
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
-    ) { uri ->
-//        uri?.let { _uri ->
-//            Log.d(TAG, "HomeScreen: passing uri: $_uri")
-//            val encodedUri = Uri.encode(_uri.toString())
-//            navController.navigateTo(Destinations.READ_ROUTE + "/$encodedUri")
-//        }
-        UriUtils.uri = uri // TODO 有空的时候改成parcelize试试，不知道成不成
-        navController.navigateTo(Destinations.READ_ROUTE)
+    ) {
+        UriUtils.run {
+            uri = it
+            isUriValid = true
+        }
+        navController.navigateTo(Destinations.WRITE_ROUTE)
     }
 
     ModalNavigationDrawer(
