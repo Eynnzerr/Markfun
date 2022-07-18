@@ -63,10 +63,11 @@ fun WriteScreen(
     val context = LocalContext.current
     val inputManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
 
-    val saveFile = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument()) { uri ->
-        // TODO 回调从来没执行过？ 并且这个无参构造都已经被弃用了，我这还能用？
-        if (uri == null) Log.d(TAG, "WriteScreen: uri is null.")
+    val saveFile = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/markdown")) { uri ->
+        Log.d(TAG, "WriteScreen: returned uri: $uri")
         uri?.let { viewModel.saveFileAs(it) }
+        // TODO Severe bug to be fixed, which will lead to coroutine cancellation.
+        navController.navigateTo(Destinations.HOME_ROUTE)
     }
 
     BackHandler {
@@ -268,7 +269,6 @@ fun WriteScreen(
                             IconButton(onClick = {
                                 // Save as
                                 saveFile.launch(viewModel.uiState.value.title + ".md")
-                                navController.navigateTo(Destinations.HOME_ROUTE)
                             }) {
                                 Icon(
                                     imageVector = Icons.Filled.SaveAs,
@@ -422,6 +422,7 @@ fun WriteScreen(
                                 override fun afterTextChanged(s: Editable?) {
                                     if (editText.text.toString() != uiState.content) // avoid dead loop
                                         viewModel.updateContent(s.toString())
+                                    Log.d(TAG, "afterTextChanged: content changed to ${viewModel.uiState.value.content}")
                                     contentChanged = true
                                 }
 

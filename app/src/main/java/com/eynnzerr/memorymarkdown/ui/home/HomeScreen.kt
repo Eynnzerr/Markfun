@@ -148,7 +148,7 @@ fun HomeScreen(
                     ) {
                         Row {
                             FloatingActionButton(
-                                onClick = { /*TODO*/ },
+                                onClick = { navController.navigateTo(Destinations.SETTING_ROUTE) },
                                 shape = CircleShape,
                                 modifier = Modifier.padding(end = 20.dp)
                             ) {

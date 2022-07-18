@@ -3,7 +3,6 @@ package com.eynnzerr.memorymarkdown.ui.write
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
-import androidx.core.net.toFile
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -26,7 +25,7 @@ import javax.inject.Inject
 data class WriteUiState(
     val title: String = "",
     val content: String = "",
-    var isReadOnly: Boolean = false
+    var isReadOnly: Boolean = true
 )
 
 @HiltViewModel
@@ -35,11 +34,12 @@ class WriteViewModel @Inject constructor(
     private val mvUtils: MMKVUtils,
     private val repository: MarkdownRepository
 ): ViewModel() {
+
     private val _uiState = MutableStateFlow(
         WriteUiState(
                 // read in pre-loaded view contents from MMKV when initializing
                 title = mvUtils.decodeString("craft_title"),
-                content = mvUtils.decodeString("craft_contents"),
+                content = mvUtils.decodeString("craft_contents")
             )
         )
     val uiState: StateFlow<WriteUiState> = _uiState
@@ -99,11 +99,19 @@ class WriteViewModel @Inject constructor(
     }
 
     fun saveFileAs(uri: Uri) {
-        val file = uri.toFile().apply {
-            if (exists()) delete()
+        Log.d(TAG, "saveFileAs: enter method saveFileAs")
+        Log.d(TAG, "saveFileAs: saved content: ${_uiState.value.content}")
+        val content = _uiState.value.content // shallow copy
+        viewModelScope.launch(Dispatchers.IO) {
+            CPApplication.context.contentResolver.openOutputStream(uri)?.writer()?.run {
+                Log.d(TAG, "saveFileAs: saved content after entering coroutine: $content")
+                write(content)
+                flush()
+                close()
+            }
         }
-        Log.d(TAG, "saveFileAs: Save ${file.name} to ${file.path}")
-        writeContent(file)
+        Log.d(TAG, "saveFileAs: Done.")
+        Toast.makeText(CPApplication.context, "Successfully saved.", Toast.LENGTH_SHORT).show()
     }
 
     fun stashFile() {

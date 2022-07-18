@@ -11,12 +11,14 @@ import androidx.navigation.compose.composable
 import com.eynnzerr.memorymarkdown.utils.UriUtils
 import com.eynnzerr.memorymarkdown.ui.home.HomeScreen
 import com.eynnzerr.memorymarkdown.ui.home.HomeViewModel
+import com.eynnzerr.memorymarkdown.ui.setting.SettingScreen
 import com.eynnzerr.memorymarkdown.ui.write.WriteScreen
 import com.eynnzerr.memorymarkdown.ui.write.WriteViewModel
 
 object Destinations {
     const val HOME_ROUTE = "home"
     const val WRITE_ROUTE = "write"
+    const val SETTING_ROUTE = "setting"
 }
 
 @ExperimentalComposeUiApi
@@ -49,15 +51,9 @@ fun NavGraph(
                 viewModel = writeViewModel
             )
         }
-//        composable(Destinations.READ_ROUTE) {
-//            val readViewModel = hiltViewModel<ReadViewModel>().apply {
-//                if (UriUtils.isUriValid) loadMarkdown(UriUtils.uri)
-//            }
-//            ReadScreen(
-//                navController = navHostController,
-//                viewModel = readViewModel
-//            )
-//        }
+        composable(Destinations.SETTING_ROUTE) {
+            SettingScreen()
+        }
     }
 }
 
