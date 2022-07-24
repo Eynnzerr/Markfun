@@ -171,6 +171,15 @@ class WriteViewModel @Inject constructor(
             _uiState.update { it.copy(content = it.content.plus("\n---\n")) }
         },
         MarkdownOption(R.drawable.option_hyperlink) {
+            _uiState.update { it.copy(content = it.content.plus("\n[]()")) }
+        },
+        MarkdownOption(R.drawable.option_task_list) {
+            _uiState.update { it.copy(content = it.content.plus("\n- [ ]")) }
+        },
+        MarkdownOption(R.drawable.option_ordered_list) {
+
+        },
+        MarkdownOption(R.drawable.option_unordered_list) {
 
         },
         MarkdownOption(R.drawable.option_table) {

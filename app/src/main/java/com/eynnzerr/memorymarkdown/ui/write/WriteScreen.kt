@@ -1,7 +1,12 @@
 package com.eynnzerr.memorymarkdown.ui.write
 
 import android.annotation.SuppressLint
+import android.content.ContentUris
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.provider.DocumentsContract
+import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -49,15 +54,21 @@ fun WriteScreen(
     navController: NavHostController,
     viewModel: WriteViewModel
 ) {
+    // viewModel
     val uiState by viewModel.uiState.collectAsState()
     val editor = viewModel.getEditor()
     val markwon = viewModel.getMarkwon()
     val optionList = viewModel.optionList
 
+    // Dialogs
     var contentChanged by remember { mutableStateOf(false) }
     var insertImage by remember { mutableStateOf(false) }
-    var imageName by remember { mutableStateOf("") }
+    var insertFromUrl by remember { mutableStateOf(false) }
     var isDialogOpen by remember { mutableStateOf(false) }
+
+    // Others
+    var imageUrl by remember { mutableStateOf("") }
+    var imageName by remember { mutableStateOf("") }
     var isContentFocused by remember { mutableStateOf(false) }
     val keyboard = LocalSoftwareKeyboardController.current
     val context = LocalContext.current
@@ -70,6 +81,29 @@ fun WriteScreen(
         navController.navigateTo(Destinations.HOME_ROUTE)
     }
 
+    val selectPicture = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        // get file path from picture uri
+        it.data?.data?.let { uri ->
+            var imagePath = ""
+            if (DocumentsContract.isDocumentUri(context, uri)) {
+                val docId = DocumentsContract.getDocumentId(uri)
+                if (uri.authority == "com.android.providers.media.documents") {
+                    val id = docId.split(":")[1]
+                    val selection = MediaStore.Images.Media._ID + "=" + id
+                    imagePath = getImagePath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, selection, context)
+                }
+                else if (uri.authority == "com.android.providers.downloads.documents") {
+                    val contentUri = ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"), docId.toLong())
+                    imagePath = getImagePath(contentUri, null, context)
+                }
+            }
+            else if (uri.scheme == "content") imagePath = getImagePath(uri, null, context)
+            else if (uri.scheme == "file") imagePath = uri.path!!
+            Log.d(TAG, "WriteScreen: path is $imagePath")
+            viewModel.updateContent(uiState.content.plus("\n![$imageName]($imagePath)\n"))
+        }
+    }
+
     BackHandler {
         UriUtils.run {
             if (isUriValid) {
@@ -79,6 +113,81 @@ fun WriteScreen(
         }
         if (contentChanged) isDialogOpen = true // 本地新建文件且内容改变时才提示是否保存草稿
         else navController.navigateTo(Destinations.HOME_ROUTE)
+    }
+
+    if (insertFromUrl) {
+        AlertDialog(
+            onDismissRequest = { insertFromUrl = false },
+            title = { },
+            text = {
+                OutlinedTextField(
+                    value = imageUrl,
+                    onValueChange = { imageUrl = it },
+                    label = {
+                        Text(
+                            text = stringResource(id = R.string.write_img_url_label),
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                    },
+                    placeholder = {
+                        Text(
+                            text = stringResource(id = R.string.write_img_url_holder),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    },
+                    maxLines = 1,
+                    textStyle = MaterialTheme.typography.bodyMedium,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.updateContent(uiState.content.plus("\n![$imageName]($imageUrl)\n"))
+                        insertFromUrl = false
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    ),
+                    elevation = null
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Done,
+                        contentDescription = null,
+                        modifier = Modifier.size(ButtonDefaults.IconSize)
+                    )
+                    Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+                    Text(
+                        text = stringResource(id = R.string.write_confirm),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = {
+                        insertFromUrl = false
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    ),
+                    elevation = null
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = null,
+                        modifier = Modifier.size(ButtonDefaults.IconSize)
+                    )
+                    Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+                    Text(
+                        text = stringResource(id = R.string.write_cancel),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
+        )
     }
 
     if (insertImage) {
@@ -117,8 +226,8 @@ fun WriteScreen(
                     ) {
                         Button(
                             onClick = {
-                                // TODO 唤起另一个Dialog
                                 insertImage = false
+                                insertFromUrl = true
                             },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Color.Transparent,
@@ -140,7 +249,10 @@ fun WriteScreen(
 
                         Button(
                             onClick = {
-                                // TODO 打开图库
+                                val intent = Intent("android.intent.action.GET_CONTENT").apply {
+                                    type = "image/*"
+                                }
+                                selectPicture.launch(intent)
                                 insertImage = false
                             },
                             colors = ButtonDefaults.buttonColors(
@@ -338,7 +450,7 @@ fun WriteScreen(
                 shape = CircleShape
             ) {
                 Icon(
-                    imageVector = if (uiState.isReadOnly) Icons.Filled.Edit else Icons.Filled.Watch,
+                    painter = painterResource(id = if (uiState.isReadOnly) R.drawable.edit else R.drawable.eye_open),
                     contentDescription = null,
                     tint = IconColor
                 )
@@ -450,5 +562,15 @@ fun WriteScreen(
 
 @SuppressLint("ModifierFactoryUnreferencedReceiver")
 private fun Modifier.autoImePadding(isFocused: Boolean): Modifier = if (isFocused) Modifier.imePadding() else Modifier
+
+@SuppressLint("Range", "Recycle")
+private fun getImagePath(uri: Uri, selection: String?, context: Context): String {
+    var path = ""
+    context.contentResolver.query(uri, null, selection, null, null)?.run {
+        if (moveToFirst()) path = getString(getColumnIndex(MediaStore.Images.Media.DATA))
+        close()
+    }
+    return path
+}
 
 private const val TAG = "WriteScreen"
