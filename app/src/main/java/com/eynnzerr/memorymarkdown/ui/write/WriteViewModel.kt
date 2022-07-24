@@ -140,63 +140,63 @@ class WriteViewModel @Inject constructor(
 
     fun getMarkwon() = markdownAgent.markwon
 
-    inner class MarkdownOption(
-        val iconResource: Int,
-        val action: () -> Unit
-    )
+//    inner class MarkdownOption(
+//        val iconResource: Int,
+//        val action: () -> Unit
+//    )
+//
+//    val optionList = mutableListOf(
+//        MarkdownOption(R.drawable.option_header) {
+//            _uiState.update { it.copy(content = it.content.plus("#")) }
+//        },
+//        MarkdownOption(R.drawable.option_bold) {
+//            _uiState.update { it.copy(content = it.content.plus("**")) }
+//        },
+//        MarkdownOption(R.drawable.option_italic) {
+//            _uiState.update { it.copy(content = it.content.plus("*")) }
+//        },
+//        MarkdownOption(R.drawable.option_delete_line) {
+//            _uiState.update { it.copy(content = it.content.plus("~~")) }
+//        },
+//        MarkdownOption(R.drawable.option_code_inline) {
+//            _uiState.update { it.copy(content = it.content.plus("`")) }
+//        },
+//        MarkdownOption(R.drawable.option_code_block) {
+//            _uiState.update { it.copy(content = it.content.plus("\n```")) }
+//        },
+//        MarkdownOption(R.drawable.option_quote) {
+//            _uiState.update { it.copy(content = it.content.plus("> ")) }
+//        },
+//        MarkdownOption(R.drawable.option_divider) {
+//            _uiState.update { it.copy(content = it.content.plus("\n---\n")) }
+//        },
+//        MarkdownOption(R.drawable.option_hyperlink) {
+//            _uiState.update { it.copy(content = it.content.plus("\n[]()")) }
+//        },
+//        MarkdownOption(R.drawable.option_task_list) {
+//            _uiState.update { it.copy(content = it.content.plus("\n- [ ]")) }
+//        },
+//        MarkdownOption(R.drawable.option_ordered_list) {
+//
+//        },
+//        MarkdownOption(R.drawable.option_unordered_list) {
+//
+//        },
+//        MarkdownOption(R.drawable.option_table) {
+//
+//        },
+//        MarkdownOption(R.drawable.option_arrow_left) {
+//
+//        },
+//        MarkdownOption(R.drawable.option_arrow_right) {
+//
+//        },
+//        MarkdownOption(R.drawable.option_undo) {
+//
+//        }
+//    )
 
-    val optionList = mutableListOf(
-        MarkdownOption(R.drawable.option_header) {
-            _uiState.update { it.copy(content = it.content.plus("#")) }
-        },
-        MarkdownOption(R.drawable.option_bold) {
-            _uiState.update { it.copy(content = it.content.plus("**")) }
-        },
-        MarkdownOption(R.drawable.option_italic) {
-            _uiState.update { it.copy(content = it.content.plus("*")) }
-        },
-        MarkdownOption(R.drawable.option_delete_line) {
-            _uiState.update { it.copy(content = it.content.plus("~~")) }
-        },
-        MarkdownOption(R.drawable.option_code_inline) {
-            _uiState.update { it.copy(content = it.content.plus("`")) }
-        },
-        MarkdownOption(R.drawable.option_code_block) {
-            _uiState.update { it.copy(content = it.content.plus("\n```")) }
-        },
-        MarkdownOption(R.drawable.option_quote) {
-            _uiState.update { it.copy(content = it.content.plus("> ")) }
-        },
-        MarkdownOption(R.drawable.option_divider) {
-            _uiState.update { it.copy(content = it.content.plus("\n---\n")) }
-        },
-        MarkdownOption(R.drawable.option_hyperlink) {
-            _uiState.update { it.copy(content = it.content.plus("\n[]()")) }
-        },
-        MarkdownOption(R.drawable.option_task_list) {
-            _uiState.update { it.copy(content = it.content.plus("\n- [ ]")) }
-        },
-        MarkdownOption(R.drawable.option_ordered_list) {
-
-        },
-        MarkdownOption(R.drawable.option_unordered_list) {
-
-        },
-        MarkdownOption(R.drawable.option_table) {
-
-        },
-        MarkdownOption(R.drawable.option_arrow_left) {
-
-        },
-        MarkdownOption(R.drawable.option_arrow_right) {
-
-        },
-        MarkdownOption(R.drawable.option_undo) {
-
-        }
-    )
-
-    fun addOption(iconResource: Int, action: () -> Unit) = optionList.add(MarkdownOption(iconResource, action))
+    // fun addOption(iconResource: Int, action: () -> Unit) = optionList.add(MarkdownOption(iconResource, action))
 }
 
 private const val TAG = "WriteViewModel"

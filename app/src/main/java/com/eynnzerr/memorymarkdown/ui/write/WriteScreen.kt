@@ -44,6 +44,9 @@ import com.eynnzerr.memorymarkdown.navigation.Destinations
 import com.eynnzerr.memorymarkdown.navigation.navigateTo
 import com.eynnzerr.memorymarkdown.ui.theme.IconButtonColor
 import com.eynnzerr.memorymarkdown.ui.theme.IconColor
+import com.eynnzerr.memorymarkdown.ui.write.markdown.MarkdownOption
+import com.eynnzerr.memorymarkdown.ui.write.markdown.addOption
+import com.eynnzerr.memorymarkdown.ui.write.markdown.optionList
 import io.noties.markwon.editor.MarkwonEditorTextWatcher
 import java.util.concurrent.Executors
 
@@ -58,7 +61,7 @@ fun WriteScreen(
     val uiState by viewModel.uiState.collectAsState()
     val editor = viewModel.getEditor()
     val markwon = viewModel.getMarkwon()
-    val optionList = viewModel.optionList
+    val optionList = optionList
 
     // Dialogs
     var contentChanged by remember { mutableStateOf(false) }
@@ -67,6 +70,7 @@ fun WriteScreen(
     var isDialogOpen by remember { mutableStateOf(false) }
 
     // Others
+    var optionId by remember { mutableStateOf(0) }
     var imageUrl by remember { mutableStateOf("") }
     var imageName by remember { mutableStateOf("") }
     var isContentFocused by remember { mutableStateOf(false) }
@@ -429,10 +433,10 @@ fun WriteScreen(
 
                         items(optionList) { option ->
                             IconButton(
-                                onClick = option.action,
+                                onClick = { optionId = option },
                             ) {
                                 Icon(
-                                    painter = painterResource(id = option.iconResource),
+                                    painter = painterResource(id = option),
                                     contentDescription = null
                                 )
                             }
@@ -445,7 +449,7 @@ fun WriteScreen(
             FloatingActionButton(
                 onClick = {
                     viewModel.updateMode()
-                    if (uiState.isReadOnly) keyboard?.hide()
+                    keyboard?.hide()
                 },
                 shape = CircleShape
             ) {
@@ -532,8 +536,8 @@ fun WriteScreen(
                                 }
 
                                 override fun afterTextChanged(s: Editable?) {
-                                    if (editText.text.toString() != uiState.content) // avoid dead loop
-                                        viewModel.updateContent(s.toString())
+                                    //if (editText.text.toString() != uiState.content) // avoid dead loop
+                                    viewModel.updateContent(s.toString())
                                     Log.d(TAG, "afterTextChanged: content changed to ${viewModel.uiState.value.content}")
                                     contentChanged = true
                                 }
@@ -544,14 +548,22 @@ fun WriteScreen(
                     },
                     modifier = Modifier.padding(13.dp),
                     update = { editText ->
-                        if (editText.text.toString() != uiState.content) {
-                            // avoid dead loop
-                            editText.setText(uiState.content)
-                            editText.setSelection(editText.text.length)
-                            if (!editText.isFocused) {
-                                editText.requestFocus()
-                                inputManager.showSoftInput(editText, 0)
+                        if (optionId != 0) {
+                            val option = when (optionId) {
+                                R.drawable.option_header -> MarkdownOption.HEADER
+                                R.drawable.option_bold -> MarkdownOption.BOLD
+                                R.drawable.option_italic -> MarkdownOption.ITALIC
+                                R.drawable.option_delete_line -> MarkdownOption.STRIKETHROUGH
+                                R.drawable.option_code_inline -> MarkdownOption.CODEINLINE
+                                R.drawable.option_code_block -> MarkdownOption.CODEBLOCK
+                                R.drawable.option_quote -> MarkdownOption.QUOTE
+                                R.drawable.option_divider -> MarkdownOption.DIVIDER
+                                R.drawable.option_hyperlink -> MarkdownOption.HYPERLINK
+                                R.drawable.option_task_list -> MarkdownOption.TASKLIST
+                                else -> MarkdownOption.NONE
                             }
+                            optionId = 0 // Consume option event to avoid dead loop: click -> update -> addOption -> textChanged -> updateContent -> update
+                            editText.addOption(option) // will call onTextChanged()
                         }
                     }
                 )
