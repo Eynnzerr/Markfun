@@ -144,7 +144,7 @@ fun HomeScreen(
                     AnimatedVisibility(
                         visible = selectionExpanded,
                         enter = scaleIn(),
-                        exit = scaleOut()
+                        exit = scaleOut() // TODO 改为expand和shrink
                     ) {
                         Row {
                             FloatingActionButton(

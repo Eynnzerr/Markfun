@@ -17,4 +17,11 @@
     <string name="write_img_name_label">name</string>
     <string name="write_img_url_holder">Input image url.</string>
     <string name="write_img_url_label">URL</string>
+
+    <!--  SettingScreen.kt  -->
+    <string name="setting_appearance">Appearance</string>
+    <string name="setting_theme">Markdown Theme</string>
+    <string name="setting_color">App Theme</string>
+    <string name="setting_about">About</string>
+    <string name="setting_advanced">Advanced</string>
 </resources>

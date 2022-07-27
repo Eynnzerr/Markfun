@@ -52,7 +52,9 @@ fun NavGraph(
             )
         }
         composable(Destinations.SETTING_ROUTE) {
-            SettingScreen()
+            SettingScreen(
+                navController = navHostController
+            )
         }
     }
 }
