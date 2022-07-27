@@ -17,12 +17,17 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.ViewCompat
 
 private val DarkColorScheme = darkColorScheme(
+    /* Dark mode:
+    状态栏字体应为白色
+    所有Icon应为白色
+    markdown读写字体应为白色
+     */
     primary = Purple80,
     secondary = PurpleGrey80,
     tertiary = Pink80,
-//    onPrimary = Color.Black,
-//    onSecondary = Color.Black,
-//    onTertiary = Color.Black
+    onPrimary = Color.White,
+    onSecondary = Color.White,
+    onTertiary = Color.White
 )
 
 private val LightColorScheme = lightColorScheme(

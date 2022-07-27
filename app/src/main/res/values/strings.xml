@@ -22,6 +22,8 @@
     <string name="setting_appearance">Appearance</string>
     <string name="setting_theme">Markdown Theme</string>
     <string name="setting_color">App Theme</string>
-    <string name="setting_about">About</string>
+
     <string name="setting_advanced">Advanced</string>
+    <string name="setting_save">Save Backup</string>
+    <string name="setting_about">About</string>
 </resources>

@@ -56,11 +56,13 @@ fun HomeScreen(
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) {
-        UriUtils.run {
-            uri = it
-            isUriValid = true
+        it?.let {
+            UriUtils.run {
+                uri = it
+                isUriValid = true
+            }
+            navController.navigateTo(Destinations.WRITE_ROUTE)
         }
-        navController.navigateTo(Destinations.WRITE_ROUTE)
     }
 
     ModalNavigationDrawer(
@@ -80,7 +82,7 @@ fun HomeScreen(
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     shape = RoundedCornerShape(topEnd = 20.dp, topStart = 20.dp),
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.surface
                 ) {
                     Text(
                         modifier = Modifier.padding(10.dp),
@@ -105,8 +107,7 @@ fun HomeScreen(
                         }) {
                             Icon(
                                 imageVector = Icons.Filled.Menu,
-                                contentDescription = null,
-                                tint = IconButtonColor
+                                contentDescription = null
                             )
                         }
                     },
@@ -114,22 +115,19 @@ fun HomeScreen(
                         IconButton(onClick = { /*TODO*/ }) {
                             Icon(
                                 imageVector = Icons.Filled.Sort,
-                                contentDescription = null,
-                                tint = IconButtonColor
+                                contentDescription = null
                             )
                         }
                         IconButton(onClick = { /*TODO*/ }) {
                             Icon(
                                 imageVector = Icons.Filled.Search,
-                                contentDescription = null,
-                                tint = IconButtonColor
+                                contentDescription = null
                             )
                         }
                         IconButton(onClick = { /*TODO*/ }) {
                             Icon(
                                 imageVector = Icons.Filled.MoreVert,
-                                contentDescription = null,
-                                tint = IconButtonColor
+                                contentDescription = null
                             )
                         }
                     }

@@ -4,10 +4,7 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.ArrowLeft
-import androidx.compose.material.icons.filled.Dashboard
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -31,6 +28,16 @@ fun SettingScreen(
     navController: NavHostController
 ) {
 
+    var openHelpDialog by remember { mutableStateOf(false) }
+
+    if (openHelpDialog) {
+        AlertDialog(
+            onDismissRequest = { openHelpDialog = false },
+            title = {},
+            confirmButton = {}
+        )
+    }
+
     Scaffold(
         topBar = {
             SmallTopAppBar(
@@ -42,8 +49,17 @@ fun SettingScreen(
                     }) {
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,
-                            contentDescription = null,
-                            tint = IconButtonColor
+                            contentDescription = null
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = {
+                        openHelpDialog = true
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.HelpOutline,
+                            contentDescription = null
                         )
                     }
                 }
@@ -81,10 +97,16 @@ fun SettingScreen(
                     // TODO Choose Markdown preview theme from list
                 }
             }
-            SettingItem(
+            SettingGroup(
                 imageVector = Icons.Filled.Dashboard,
-                title = stringResource(id = R.string.setting_advanced)) {
-
+                title = stringResource(id = R.string.setting_advanced)
+            ) {
+                SettingSwitch(
+                    imageVector = Icons.Filled.Download, 
+                    title = stringResource(id = R.string.setting_save),
+                ) {
+                    
+                }
             }
             SettingItem(
                 resourceId = R.drawable.setting_about,
@@ -203,5 +225,30 @@ private fun SettingItem(resourceId: Int, title: String, onClick: () -> Unit) {
         )
         Spacer(modifier = Modifier.padding(horizontal = 16.dp))
         Text(text = title)
+    }
+}
+
+@Composable
+private fun SettingSwitch(imageVector: ImageVector, title: String, onSwitch: (Boolean) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 32.dp, vertical = 20.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Row {
+            Icon(
+                imageVector = imageVector,
+                contentDescription = title,
+                modifier = Modifier.size(32.dp)
+            )
+            Spacer(modifier = Modifier.padding(horizontal = 16.dp))
+            Text(text = title)
+        }
+        Switch(
+            checked = true,
+            onCheckedChange = onSwitch
+        )
     }
 }

@@ -17,6 +17,7 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -30,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -76,7 +78,8 @@ fun WriteScreen(
     var isContentFocused by remember { mutableStateOf(false) }
     val keyboard = LocalSoftwareKeyboardController.current
     val context = LocalContext.current
-    val inputManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    val textColor = if (isSystemInDarkTheme()) Color.White.toArgb() else Color.Black.toArgb()
+    // val inputManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
 
     val saveFile = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/markdown")) { uri ->
         Log.d(TAG, "WriteScreen: returned uri: $uri")
@@ -374,8 +377,7 @@ fun WriteScreen(
                     }) {
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,
-                            contentDescription = null,
-                            tint = IconButtonColor
+                            contentDescription = null
                         )
                     }
                 },
@@ -388,8 +390,7 @@ fun WriteScreen(
                             }) {
                                 Icon(
                                     imageVector = Icons.Filled.SaveAs,
-                                    contentDescription = null,
-                                    tint = IconButtonColor
+                                    contentDescription = null
                                 )
                             }
                             IconButton(onClick = {
@@ -401,8 +402,7 @@ fun WriteScreen(
                             }) {
                                 Icon(
                                     imageVector = Icons.Filled.Done,
-                                    contentDescription = null,
-                                    tint = IconButtonColor
+                                    contentDescription = null
                                 )
                             }
                         }
@@ -476,6 +476,7 @@ fun WriteScreen(
                 AndroidView(
                     factory = { context ->
                         TextView(context).also { textView ->
+                            textView.setTextColor(textColor)
                             markwon.setMarkdown(textView, uiState.content)
                         }
                     },
@@ -510,6 +511,8 @@ fun WriteScreen(
                 AndroidView(
                     factory = { context ->
                         EditText(context).also { editText ->
+                            editText.setHintTextColor(textColor)
+                            editText.setTextColor(textColor)
                             editText.setText(uiState.content)
                             editText.hint = "Enjoy your MarkDown now!"
                             editText.background = null
