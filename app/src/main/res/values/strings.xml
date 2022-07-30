@@ -22,6 +22,9 @@
     <string name="setting_appearance">Appearance</string>
     <string name="setting_theme">Markdown Theme</string>
     <string name="setting_color">App Theme</string>
+    <string name="setting_theme_hint">Choose a favorite color</string>
+    <string name="setting_confirm">Confirm</string>
+    <string name="setting_cancel">Cancel</string>
 
     <string name="setting_advanced">Advanced</string>
     <string name="setting_save">Save Backup</string>

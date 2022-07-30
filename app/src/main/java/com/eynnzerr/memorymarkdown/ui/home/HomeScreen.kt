@@ -153,7 +153,7 @@ fun HomeScreen(
                                 Icon(
                                     imageVector = Icons.Filled.Settings,
                                     contentDescription = null,
-                                    tint = IconColor
+                                    // tint = IconColor
                                 )
                             }
                             FloatingActionButton(
@@ -166,7 +166,7 @@ fun HomeScreen(
                                 Icon(
                                     imageVector = Icons.Filled.FileOpen,
                                     contentDescription = null,
-                                    tint = IconColor
+                                    // tint = IconColor
                                 )
                             }
                             FloatingActionButton(
@@ -177,7 +177,7 @@ fun HomeScreen(
                                 Icon(
                                     imageVector = Icons.Filled.Edit,
                                     contentDescription = null,
-                                    tint = IconColor
+                                    // tint = IconColor
                                 )
                             }
                         }
@@ -193,7 +193,7 @@ fun HomeScreen(
                         Icon(
                             imageVector = Icons.Filled.HomeRepairService,
                             contentDescription = null,
-                            tint = IconColor,
+                            // tint = IconColor,
                             modifier = Modifier.rotate(animalBooleanState * 360)
                         )
                     }

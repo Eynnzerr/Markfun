@@ -12,6 +12,7 @@ import com.eynnzerr.memorymarkdown.utils.UriUtils
 import com.eynnzerr.memorymarkdown.ui.home.HomeScreen
 import com.eynnzerr.memorymarkdown.ui.home.HomeViewModel
 import com.eynnzerr.memorymarkdown.ui.setting.SettingScreen
+import com.eynnzerr.memorymarkdown.ui.setting.SettingViewModel
 import com.eynnzerr.memorymarkdown.ui.write.WriteScreen
 import com.eynnzerr.memorymarkdown.ui.write.WriteViewModel
 
@@ -52,8 +53,10 @@ fun NavGraph(
             )
         }
         composable(Destinations.SETTING_ROUTE) {
+            val settingViewModel: SettingViewModel = hiltViewModel()
             SettingScreen(
-                navController = navHostController
+                navController = navHostController,
+                viewModel = settingViewModel
             )
         }
     }

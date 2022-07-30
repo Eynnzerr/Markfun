@@ -155,7 +155,7 @@ fun WriteScreen(
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
+                        contentColor = MaterialTheme.colorScheme.onSurface
                     ),
                     elevation = null
                 ) {
@@ -178,7 +178,7 @@ fun WriteScreen(
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
+                        contentColor = MaterialTheme.colorScheme.onSurface
                     ),
                     elevation = null
                 ) {
@@ -238,7 +238,7 @@ fun WriteScreen(
                             },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Color.Transparent,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
+                                contentColor = MaterialTheme.colorScheme.onSurface
                             ),
                             elevation = null
                         ) {
@@ -264,7 +264,7 @@ fun WriteScreen(
                             },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Color.Transparent,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
+                                contentColor = MaterialTheme.colorScheme.onSurface
                             ),
                             elevation = null
                         ) {
@@ -313,7 +313,7 @@ fun WriteScreen(
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
+                        contentColor = MaterialTheme.colorScheme.onSurface
                     ),
                     elevation = null
                 ) {
@@ -346,7 +346,7 @@ fun WriteScreen(
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
+                        contentColor = MaterialTheme.colorScheme.onSurface
                     ),
                     elevation = null
                 ) {
@@ -456,7 +456,7 @@ fun WriteScreen(
                 Icon(
                     painter = painterResource(id = if (uiState.isReadOnly) R.drawable.edit else R.drawable.eye_open),
                     contentDescription = null,
-                    tint = IconColor
+                    // tint = IconColor
                 )
             }
         }

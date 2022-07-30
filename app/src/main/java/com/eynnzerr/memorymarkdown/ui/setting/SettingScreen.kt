@@ -1,35 +1,70 @@
 package com.eynnzerr.memorymarkdown.ui.setting
 
-import androidx.compose.animation.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.eynnzerr.memorymarkdown.R
 import com.eynnzerr.memorymarkdown.navigation.Destinations
 import com.eynnzerr.memorymarkdown.navigation.navigateTo
-import com.eynnzerr.memorymarkdown.ui.theme.IconButtonColor
-import com.eynnzerr.memorymarkdown.ui.theme.IconColor
 
 private const val TAG = "SettingScreen"
 
 @ExperimentalMaterial3Api
 @Composable
 fun SettingScreen(
-    navController: NavHostController
+    navController: NavHostController,
+    viewModel: SettingViewModel
 ) {
+    val uiState by viewModel.uiState.collectAsState()
 
+    // dialogs
+    var openColorPicker by remember { mutableStateOf(false) }
     var openHelpDialog by remember { mutableStateOf(false) }
 
+    if (openColorPicker) {
+        AlertDialog(
+            onDismissRequest = { openColorPicker = false },
+            title = { Text(text = stringResource(id = R.string.setting_theme_hint)) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        openColorPicker = false
+                    },
+                    elevation = null
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.CheckCircle,
+                        contentDescription = stringResource(id = R.string.setting_confirm),
+                        modifier = Modifier.size(ButtonDefaults.IconSize)
+                    )
+                    Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+                    Text(
+                        text = stringResource(id = R.string.setting_confirm),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            },
+            text = {
+                ColorPicker(colors = defaultColors, initialIndex = uiState.initColorIndex) { color, index ->
+                    viewModel.updateAppTheme(color, index)
+                }
+            }
+        )
+    }
+    
     if (openHelpDialog) {
         AlertDialog(
             onDismissRequest = { openHelpDialog = false },
@@ -89,6 +124,8 @@ fun SettingScreen(
                     title = stringResource(id = R.string.setting_color)
                 ) {
                     // TODO Choose app color from color picker
+                    //colorDialog.show()
+                    openColorPicker = true
                 }
                 SettingItem(
                     resourceId = R.drawable.setting_theme,
@@ -104,8 +141,9 @@ fun SettingScreen(
                 SettingSwitch(
                     imageVector = Icons.Filled.Download, 
                     title = stringResource(id = R.string.setting_save),
-                ) {
-                    
+                    checked = uiState.isAutomaticallySaveEnabled
+                ) { enabled ->
+                    viewModel.updateBackupPreference(enabled)
                 }
             }
             SettingItem(
@@ -118,137 +156,49 @@ fun SettingScreen(
 }
 
 @Composable
-private fun SettingGroup(
-    imageVector: ImageVector,
-    title: String,
-    content: @Composable ColumnScope.() -> Unit
-) {
-    var expand by remember { mutableStateOf(false) }
-    Row(
+private fun ColorPicker(colors: List<AppColor>, initialIndex: Int, onClickItem: (Int, Int) -> Unit) {
+    var selectedIndex by remember { mutableStateOf(initialIndex) }
+    LazyColumn(
         modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
+        itemsIndexed(colors) { index, color ->
+            ColorItem(color = color, selected = index == selectedIndex) {
+                onClickItem(it, index)
+                selectedIndex = index
+            }
+        }
+    }
+}
+
+@Composable
+private fun ColorItem(color: AppColor, selected: Boolean, onSelectColor: (Int) -> Unit) {
+    // 输入： 颜色和名称
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onSelectColor(color.colorArgb) }
+            .padding(vertical = 10.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        SettingItem(imageVector = imageVector, title = title) {
-            expand = ! expand
+        Surface(
+            modifier = Modifier.size(48.dp),
+            shape = CircleShape,
+            color = Color(color.colorArgb)
+        ) {
+            if (selected) {
+                Icon(
+                    modifier = Modifier.size(24.dp),
+                    imageVector = Icons.Filled.Done,
+                    contentDescription = color.name
+                )
+            }
         }
-        Icon(
-            imageVector = if (expand) Icons.Filled.ArrowDropDown else Icons.Filled.ArrowLeft,
-            contentDescription = null
-        )
-    }
 
-    AnimatedVisibility(visible = expand) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            content = content
-        )
-    }
-}
-
-@Composable
-private fun SettingGroup(
-    resourceId: Int,
-    title: String,
-    content: @Composable ColumnScope.() -> Unit
-) {
-    var expand by remember { mutableStateOf(false) }
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 32.dp, vertical = 20.dp)
-            .clickable { expand = !expand },
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Row {
-            Icon(
-                painter = painterResource(id = resourceId),
-                contentDescription = title,
-                modifier = Modifier.size(32.dp)
-            )
-            Spacer(modifier = Modifier.padding(horizontal = 16.dp))
-            Text(text = title)
-        }
-        Icon(
-            imageVector = if (expand) Icons.Filled.ArrowDropDown else Icons.Filled.ArrowLeft,
-            contentDescription = null,
-            tint = IconButtonColor,
-            modifier = Modifier.size(32.dp)
-        )
-    }
-
-    AnimatedVisibility(
-        visible = expand,
-        enter = expandVertically(),
-        exit = shrinkVertically()
-    ) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            content = content
-        )
-    }
-}
-
-@Composable
-private fun SettingItem(imageVector: ImageVector, title: String, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 32.dp, vertical = 20.dp)
-            .clickable { onClick() },
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(
-            imageVector = imageVector,
-            contentDescription = title,
-            modifier = Modifier.size(32.dp)
-        )
-        Spacer(modifier = Modifier.padding(horizontal = 16.dp))
-        Text(text = title)
-    }
-}
-
-@Composable
-private fun SettingItem(resourceId: Int, title: String, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 32.dp, vertical = 20.dp)
-            .clickable { onClick() },
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            painter = painterResource(id = resourceId),
-            contentDescription = title,
-            modifier = Modifier.size(32.dp)
-        )
-        Spacer(modifier = Modifier.padding(horizontal = 16.dp))
-        Text(text = title)
-    }
-}
-
-@Composable
-private fun SettingSwitch(imageVector: ImageVector, title: String, onSwitch: (Boolean) -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 32.dp, vertical = 20.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Row {
-            Icon(
-                imageVector = imageVector,
-                contentDescription = title,
-                modifier = Modifier.size(32.dp)
-            )
-            Spacer(modifier = Modifier.padding(horizontal = 16.dp))
-            Text(text = title)
-        }
-        Switch(
-            checked = true,
-            onCheckedChange = onSwitch
+        Text(
+            text = color.name,
+            fontSize = 20.sp
         )
     }
 }
