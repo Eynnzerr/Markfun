@@ -2,7 +2,12 @@
     <string name="app_name">MemoryMarkdown</string>
 
     <!--  HomeScreen.kt  -->
-    <string name="home_hint">Choose md file to read or write by yourself!</string>
+    <string name="home_hint">Choose md file to read \n or write by yourself!</string>
+
+    <string name="drawer_created">Recently Created</string>
+    <string name="drawer_viewed">Recently Viewed</string>
+    <string name="drawer_starred">Starred</string>
+    <string name="drawer_archived">Archived</string>
 
     <!--  WriteScreen.kt  -->
     <string name="write_title_holder">Title Here.</string>

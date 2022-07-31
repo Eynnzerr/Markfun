@@ -32,8 +32,10 @@ fun MemoryMarkdownTheme(
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
-            //(view.context as Activity).window.statusBarColor = colorScheme.inversePrimary.toArgb()
-            WindowCompat.getInsetsController((view.context as Activity).window, view).isAppearanceLightStatusBars = !darkTheme
+            WindowCompat.getInsetsController((view.context as Activity).window, view).apply {
+                isAppearanceLightStatusBars = !darkTheme
+                isAppearanceLightNavigationBars = !darkTheme
+            }
         }
     }
 

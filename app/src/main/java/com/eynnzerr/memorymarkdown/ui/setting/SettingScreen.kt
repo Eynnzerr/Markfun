@@ -1,5 +1,6 @@
 package com.eynnzerr.memorymarkdown.ui.setting
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -29,6 +31,7 @@ fun SettingScreen(
     viewModel: SettingViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
 
     // dialogs
     var openColorPicker by remember { mutableStateOf(false) }
@@ -80,7 +83,7 @@ fun SettingScreen(
                 title = {},
                 navigationIcon = {
                     IconButton(onClick = {
-                        navController.navigateTo(Destinations.HOME_ROUTE)
+                        navController.popBackStack()
                     }) {
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,
@@ -108,11 +111,11 @@ fun SettingScreen(
         ) {
             /*
             设置选项：
-            主题 select
-            配色 select
-            是否自动导出 switch
-            高级用户偏好设置 navigate
-            关于 navigate
+            主题 select done.
+            配色 select TODO
+            是否自动导出 switch done.
+            高级用户偏好设置 navigate TODO
+            关于 navigate TODO
              */
             Spacer(modifier = Modifier.padding(vertical = 24.dp))
             SettingGroup(
@@ -123,15 +126,15 @@ fun SettingScreen(
                     resourceId = R.drawable.setting_palette,
                     title = stringResource(id = R.string.setting_color)
                 ) {
-                    // TODO Choose app color from color picker
-                    //colorDialog.show()
+                    // Choose app color from color picker
                     openColorPicker = true
                 }
                 SettingItem(
                     resourceId = R.drawable.setting_theme,
                     title = stringResource(id = R.string.setting_theme)
                 ) {
-                    // TODO Choose Markdown preview theme from list
+                    // Choose Markdown preview theme from list
+                    Toast.makeText(context, "This feature will be ready very soon.", Toast.LENGTH_SHORT).show()
                 }
             }
             SettingGroup(

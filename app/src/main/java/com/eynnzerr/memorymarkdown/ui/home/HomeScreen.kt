@@ -1,6 +1,7 @@
 package com.eynnzerr.memorymarkdown.ui.home
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
@@ -19,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -28,8 +30,6 @@ import com.eynnzerr.memorymarkdown.R
 import com.eynnzerr.memorymarkdown.utils.UriUtils
 import com.eynnzerr.memorymarkdown.navigation.Destinations
 import com.eynnzerr.memorymarkdown.navigation.navigateTo
-import com.eynnzerr.memorymarkdown.ui.theme.IconButtonColor
-import com.eynnzerr.memorymarkdown.ui.theme.IconColor
 import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "Range")
@@ -40,6 +40,9 @@ fun HomeScreen(
     navController: NavHostController,
     viewModel: HomeViewModel
 ) {
+    //
+    val uiState by viewModel.uiState.collectAsState()
+
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     var selectionExpanded by remember { mutableStateOf(false) }
@@ -81,15 +84,47 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.padding(top = 80.dp))
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    shape = RoundedCornerShape(topEnd = 20.dp, topStart = 20.dp),
-                    color = MaterialTheme.colorScheme.surface
+                    shape = RoundedCornerShape(topEnd = 20.dp, topStart = 20.dp)
                 ) {
-                    Text(
-                        modifier = Modifier.padding(10.dp),
-                        text = stringResource(id = R.string.app_name),
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        fontSize = 20.sp
-                    )
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                    ) {
+                        Text(
+                            modifier = Modifier.padding(10.dp),
+                            text = stringResource(id = R.string.app_name),
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            fontSize = 20.sp
+                        )
+                        // 本地创建 收藏 最近打开 最近删除
+                        DrawerItem(
+                            imageVector = Icons.Filled.Source,
+                            title = stringResource(id = R.string.drawer_created),
+                            isSelected = uiState.homeType == HomeType.CREATED) {
+                            viewModel.switchType(HomeType.CREATED)
+                        }
+                        DrawerItem(
+                            modifier = Modifier.padding(bottom = 8.dp),
+                            imageVector = Icons.Filled.Visibility,
+                            title = stringResource(id = R.string.drawer_viewed),
+                            isSelected = uiState.homeType == HomeType.VIEWED) {
+                            viewModel.switchType(HomeType.VIEWED)
+                        }
+                        DrawerItem(
+                            modifier = Modifier.padding(bottom = 8.dp),
+                            imageVector = Icons.Filled.Star,
+                            title = stringResource(id = R.string.drawer_starred),
+                            isSelected = uiState.homeType == HomeType.STARRED) {
+                            viewModel.switchType(HomeType.STARRED)
+                        }
+                        DrawerItem(
+                            modifier = Modifier.padding(bottom = 8.dp),
+                            imageVector = Icons.Filled.Delete,
+                            title = stringResource(id = R.string.drawer_archived),
+                            isSelected = uiState.homeType == HomeType.ARCHIVED) {
+                            viewModel.switchType(HomeType.ARCHIVED)
+                        }
+                    }
+
                 }
             }
         }
@@ -200,6 +235,7 @@ fun HomeScreen(
                 }
             }
         ) {
+            // Display logo when data is empty
             Column(
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -207,7 +243,7 @@ fun HomeScreen(
             ) {
                 Icon(
                     modifier = Modifier.size(100.dp),
-                    imageVector = Icons.Filled.Token,
+                    painter = painterResource(id = R.drawable.markdown_line),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primaryContainer
                 )

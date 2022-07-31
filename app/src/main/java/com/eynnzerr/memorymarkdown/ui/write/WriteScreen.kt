@@ -10,13 +10,17 @@ import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.util.TypedValue
+import android.view.Gravity
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.*
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -34,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -44,14 +49,13 @@ import com.eynnzerr.memorymarkdown.R
 import com.eynnzerr.memorymarkdown.utils.UriUtils
 import com.eynnzerr.memorymarkdown.navigation.Destinations
 import com.eynnzerr.memorymarkdown.navigation.navigateTo
-import com.eynnzerr.memorymarkdown.ui.theme.IconButtonColor
-import com.eynnzerr.memorymarkdown.ui.theme.IconColor
 import com.eynnzerr.memorymarkdown.ui.write.markdown.MarkdownOption
 import com.eynnzerr.memorymarkdown.ui.write.markdown.addOption
 import com.eynnzerr.memorymarkdown.ui.write.markdown.optionList
 import io.noties.markwon.editor.MarkwonEditorTextWatcher
 import java.util.concurrent.Executors
 
+@ExperimentalAnimationApi
 @ExperimentalComposeUiApi
 @ExperimentalMaterial3Api
 @Composable
@@ -79,7 +83,10 @@ fun WriteScreen(
     val keyboard = LocalSoftwareKeyboardController.current
     val context = LocalContext.current
     val textColor = if (isSystemInDarkTheme()) Color.White.toArgb() else Color.Black.toArgb()
-    // val inputManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+
+    // AndroidView softInput management
+    val inputManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    val windowToken = LocalView.current.windowToken
 
     val saveFile = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/markdown")) { uri ->
         Log.d(TAG, "WriteScreen: returned uri: $uri")
@@ -119,7 +126,7 @@ fun WriteScreen(
             }
         }
         if (contentChanged) isDialogOpen = true // 本地新建文件且内容改变时才提示是否保存草稿
-        else navController.navigateTo(Destinations.HOME_ROUTE)
+        else navController.popBackStack()
     }
 
     if (insertFromUrl) {
@@ -302,13 +309,8 @@ fun WriteScreen(
                         // saveCraft()
                         viewModel.saveCraft()
                         isDialogOpen = false
-                        UriUtils.run {
-                            if (isUriValid) {
-                                uri = null
-                                isUriValid = false
-                            }
-                        }
-                        navController.navigateTo(Destinations.HOME_ROUTE)
+                        UriUtils.clearUri()
+                        navController.popBackStack()
                         keyboard?.hide()
                     },
                     colors = ButtonDefaults.buttonColors(
@@ -335,13 +337,8 @@ fun WriteScreen(
                         // removeCraft()
                         viewModel.emptyCraft()
                         isDialogOpen = false
-                        UriUtils.run {
-                            if (isUriValid) {
-                                uri = null
-                                isUriValid = false
-                            }
-                        }
-                        navController.navigateTo(Destinations.HOME_ROUTE)
+                        UriUtils.clearUri()
+                        navController.popBackStack()
                         keyboard?.hide()
                     },
                     colors = ButtonDefaults.buttonColors(
@@ -373,7 +370,7 @@ fun WriteScreen(
                 navigationIcon = {
                     IconButton(onClick = {
                         if (contentChanged) isDialogOpen = true
-                        else navController.navigateTo(Destinations.HOME_ROUTE)
+                        else navController.popBackStack()
                     }) {
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,
@@ -411,7 +408,11 @@ fun WriteScreen(
             )
         },
         bottomBar = {
-            AnimatedVisibility(visible = !uiState.isReadOnly) {
+            AnimatedVisibility(
+                visible = !uiState.isReadOnly,
+                enter = expandVertically(),
+                exit = shrinkVertically()
+            ) {
                 Surface(
                     shadowElevation = 10.dp,
                     modifier = Modifier.autoImePadding(isContentFocused)
@@ -447,9 +448,10 @@ fun WriteScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
+                modifier = Modifier.autoNavigationPadding(uiState.isReadOnly),
                 onClick = {
                     viewModel.updateMode()
-                    keyboard?.hide()
+                    inputManager.hideSoftInputFromWindow(windowToken, 0)
                 },
                 shape = CircleShape
             ) {
@@ -466,62 +468,62 @@ fun WriteScreen(
                 .fillMaxSize()
                 .padding(it)
         ) {
+            TextField(
+                value = uiState.title,
+                onValueChange = { newInput -> viewModel.updateTitle(newInput) },
+                placeholder = {
+                    Text(
+                        text = stringResource(id = R.string.write_title_holder),
+                        style = MaterialTheme.typography.headlineLarge
+                    )
+                },
+                colors = TextFieldDefaults.textFieldColors(
+                    containerColor = Color.Transparent,
+                    disabledTextColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent
+                ),
+                maxLines = 1,
+                textStyle = MaterialTheme.typography.headlineLarge,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                readOnly = uiState.isReadOnly
+            )
+
             if (uiState.isReadOnly) {
-                Text(
-                    text = uiState.title,
-                    style = MaterialTheme.typography.headlineLarge,
-                    modifier = Modifier.padding(horizontal = 13.dp),
-                    maxLines = 1
-                )
                 AndroidView(
                     factory = { context ->
-                        TextView(context).also { textView ->
-                            textView.setTextColor(textColor)
-                            markwon.setMarkdown(textView, uiState.content)
+                        TextView(context).apply {
+                            layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+                            gravity = Gravity.TOP.or(Gravity.START)
+                            setTextSize(TypedValue.COMPLEX_UNIT_SP, 18.5f)
+                            setTextColor(textColor)
+                            markwon.setMarkdown(this, uiState.content)
                         }
                     },
-                    modifier = Modifier.padding(13.dp),
+                    modifier = Modifier.padding(top = 23.dp, start = 17.dp, bottom = 13.dp, end = 13.dp),
                     update = { textView ->
                         markwon.setMarkdown(textView, uiState.content)
                     }
                 )
             }
             else {
-                TextField(
-                    value = uiState.title,
-                    onValueChange = { newInput -> viewModel.updateTitle(newInput) },
-                    placeholder = {
-                        Text(
-                            text = stringResource(id = R.string.write_title_holder),
-                            style = MaterialTheme.typography.headlineLarge
-                        )
-                    },
-                    colors = TextFieldDefaults.textFieldColors(
-                        containerColor = Color.Transparent,
-                        disabledTextColor = Color.Transparent,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent
-                    ),
-                    maxLines = 1,
-                    textStyle = MaterialTheme.typography.headlineLarge,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
-                )
-
                 AndroidView(
                     factory = { context ->
-                        EditText(context).also { editText ->
-                            editText.setHintTextColor(textColor)
-                            editText.setTextColor(textColor)
-                            editText.setText(uiState.content)
-                            editText.hint = "Enjoy your MarkDown now!"
-                            editText.background = null
-                            editText.addTextChangedListener(MarkwonEditorTextWatcher.withPreRender(
+                        EditText(context).apply {
+                            layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+                            gravity = Gravity.TOP.or(Gravity.START)
+                            setHintTextColor(textColor)
+                            setTextColor(textColor)
+                            setText(uiState.content)
+                            hint = "Enjoy your MarkDown now!"
+                            background = null
+                            addTextChangedListener(MarkwonEditorTextWatcher.withPreRender(
                                 editor,
                                 Executors.newCachedThreadPool(),
-                                editText
+                                this
                             ))
-                            editText.addTextChangedListener(object: TextWatcher {
+                            addTextChangedListener(object: TextWatcher {
                                 override fun beforeTextChanged(
                                     s: CharSequence?,
                                     start: Int,
@@ -546,7 +548,7 @@ fun WriteScreen(
                                 }
 
                             })
-                            editText.setOnFocusChangeListener { _, hasFocus -> isContentFocused = hasFocus }
+                            setOnFocusChangeListener { _, hasFocus -> isContentFocused = hasFocus }
                         }
                     },
                     modifier = Modifier.padding(13.dp),
@@ -577,6 +579,10 @@ fun WriteScreen(
 
 @SuppressLint("ModifierFactoryUnreferencedReceiver")
 private fun Modifier.autoImePadding(isFocused: Boolean): Modifier = if (isFocused) Modifier.imePadding() else Modifier
+
+// When isReadOnly, add navigationPadding for FAB
+@SuppressLint("ModifierFactoryUnreferencedReceiver")
+private fun Modifier.autoNavigationPadding(isReadOnly: Boolean): Modifier = if (isReadOnly) Modifier.navigationBarsPadding() else Modifier
 
 @SuppressLint("Range", "Recycle")
 private fun getImagePath(uri: Uri, selection: String?, context: Context): String {

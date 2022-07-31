@@ -8,6 +8,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navDeepLink
 import com.eynnzerr.memorymarkdown.utils.UriUtils
 import com.eynnzerr.memorymarkdown.ui.home.HomeScreen
 import com.eynnzerr.memorymarkdown.ui.home.HomeViewModel
@@ -42,7 +43,10 @@ fun NavGraph(
                 viewModel = homeViewModel
             )
         }
-        composable(Destinations.WRITE_ROUTE) {
+        composable(
+            Destinations.WRITE_ROUTE,
+            deepLinks = listOf(navDeepLink { mimeType = "text/markdown" })
+        ) {
             val writeViewModel = hiltViewModel<WriteViewModel>().apply {
                 if (UriUtils.isUriValid) loadMarkdown(UriUtils.uri)
                 else loadCraft()

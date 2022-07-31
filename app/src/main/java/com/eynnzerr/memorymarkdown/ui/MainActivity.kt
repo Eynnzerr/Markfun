@@ -1,6 +1,9 @@
 package com.eynnzerr.memorymarkdown.ui
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.Window
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -12,6 +15,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import com.eynnzerr.memorymarkdown.ui.theme.MemoryMarkdownTheme
+import com.eynnzerr.memorymarkdown.utils.UriUtils
 import com.tencent.mmkv.MMKV
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -24,6 +28,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         MMKV.initialize(this)
         setImmerseStatusBar(window)
+
+        if (intent.action == Intent.ACTION_VIEW) {
+            val uri = Uri.parse(intent.dataString)
+            UriUtils.prepareUri(uri)
+        }
 
         setContent {
             MemoryApp()
@@ -49,3 +58,5 @@ fun DefaultPreview() {
         MemoryApp()
     }
 }
+
+private const val TAG = "MainActivity"

@@ -10,6 +10,7 @@ import io.noties.markwon.editor.handler.EmphasisEditHandler
 import io.noties.markwon.editor.handler.StrongEmphasisEditHandler
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
 import io.noties.markwon.ext.tasklist.TaskListPlugin
+import io.noties.markwon.html.HtmlPlugin
 import io.noties.markwon.image.ImagesPlugin
 import io.noties.markwon.image.glide.GlideImagesPlugin
 import org.qosp.notes.ui.editor.markdown.QuoteHandler
@@ -21,6 +22,7 @@ class MarkdownAgent @Inject constructor() {
     val markwon by lazy {
         Markwon.builder(CPApplication.context)
             .usePlugin(StrikethroughPlugin.create())
+            .usePlugin(HtmlPlugin.create())
             .usePlugin(GlideImagesPlugin.create(CPApplication.context))
             .usePlugin(TaskListPlugin.create(CPApplication.context))
             .build()
