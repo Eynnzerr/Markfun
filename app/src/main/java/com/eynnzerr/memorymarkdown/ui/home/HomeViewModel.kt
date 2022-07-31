@@ -6,6 +6,7 @@ import com.eynnzerr.memorymarkdown.data.MMKVUtils
 import com.eynnzerr.memorymarkdown.data.PreferenceKeys
 import com.eynnzerr.memorymarkdown.data.database.MarkdownData
 import com.eynnzerr.memorymarkdown.data.database.MarkdownRepository
+import com.eynnzerr.memorymarkdown.ui.write.markdown.MarkdownAgent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,7 +29,8 @@ enum class HomeType {
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val repository: MarkdownRepository
+    private val repository: MarkdownRepository,
+    private val markdownAgent: MarkdownAgent
 ): ViewModel() {
     private val _uiState = MutableStateFlow(
         HomeUiState(
@@ -37,6 +39,8 @@ class HomeViewModel @Inject constructor(
         )
     )
     val uiState = _uiState as StateFlow<HomeUiState>
+
+    val markwon = markdownAgent.markwon
 
     init {
         viewModelScope.launch {
@@ -58,15 +62,15 @@ class HomeViewModel @Inject constructor(
                 }
                 HomeType.VIEWED -> {
                     // TODO Fetch viewed data
-                    _uiState.update { it.copy(homeType = HomeType.VIEWED) }
+                    _uiState.update { HomeUiState(HomeType.VIEWED, emptyList()) }
                 }
                 HomeType.STARRED -> {
                     // TODO Fetch starred data
-                    _uiState.update { it.copy(homeType = HomeType.STARRED) }
+                    _uiState.update { HomeUiState(HomeType.STARRED, emptyList()) }
                 }
                 HomeType.ARCHIVED -> {
                     // TODO Fetch archived data
-                    _uiState.update { it.copy(homeType = HomeType.ARCHIVED) }
+                    _uiState.update { HomeUiState(HomeType.ARCHIVED, emptyList()) }
                 }
             }
         }

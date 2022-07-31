@@ -236,24 +236,38 @@ fun HomeScreen(
             }
         ) {
             // Display logo when data is empty
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Icon(
-                    modifier = Modifier.size(100.dp),
-                    painter = painterResource(id = R.drawable.markdown_line),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primaryContainer
-                )
-                Text(
-                    text = stringResource(id = R.string.home_hint),
-                    fontSize = 15.sp,
-                    textAlign = TextAlign.Center
+            if (uiState.homeList.isEmpty()) {
+                Logo()
+            }
+            else {
+                HomeList(
+                    modifier = Modifier.padding(it),
+                    dataList = uiState.homeList,
+                    markwon = viewModel.markwon
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun Logo() {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            modifier = Modifier.size(100.dp),
+            painter = painterResource(id = R.drawable.markdown_line),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primaryContainer
+        )
+        Text(
+            text = stringResource(id = R.string.home_hint),
+            fontSize = 15.sp,
+            textAlign = TextAlign.Center
+        )
     }
 }
 
