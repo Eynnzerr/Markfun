@@ -23,6 +23,8 @@ class MarkdownRepository @Inject constructor() {
         val res = dao.deleteMarkdown(*markdown)
         Log.d(TAG, "deleteMarkdown: delete markdown result: $res")
     }
+
+    suspend fun updateContentById(markDownContent: MarkDownContent) = dao.updateContentById(markDownContent)
 }
 
 private const val TAG = "MarkdownRepository"

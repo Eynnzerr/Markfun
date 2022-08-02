@@ -120,14 +120,11 @@ fun WriteScreen(
     }
 
     BackHandler {
-        UriUtils.run {
-            if (isUriValid) {
-                uri = null
-                isUriValid = false
-            }
-        }
         if (contentChanged) isDialogOpen = true // 本地新建文件且内容改变时才提示是否保存草稿
-        else navController.popBackStack()
+        else {
+            UriUtils.clearUri()
+            navController.popBackStack()
+        }
     }
 
     if (insertFromUrl) {

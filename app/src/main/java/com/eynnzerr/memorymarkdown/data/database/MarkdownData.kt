@@ -45,3 +45,9 @@ data class MarkdownData(
         return "markdownData(id=$id, title=$title, status=$status, isStarred=$isStarred)"
     }
 }
+
+data class MarkDownContent(
+    val id: Int,
+    val title: String,
+    val content: String
+)

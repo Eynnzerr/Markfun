@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.eynnzerr.memorymarkdown.base.CPApplication
 import com.eynnzerr.memorymarkdown.data.MMKVUtils
 import com.eynnzerr.memorymarkdown.data.PreferenceKeys
+import com.eynnzerr.memorymarkdown.data.database.MarkDownContent
 import com.eynnzerr.memorymarkdown.data.database.MarkdownData
 import com.eynnzerr.memorymarkdown.data.database.MarkdownRepository
 import com.eynnzerr.memorymarkdown.ui.write.markdown.MarkdownAgent
@@ -32,6 +33,8 @@ class WriteViewModel @Inject constructor(
     private val repository: MarkdownRepository
 ): ViewModel() {
 
+    var targetId: Int = -1
+
     private val _uiState = MutableStateFlow(
         WriteUiState(
                 // read in pre-loaded view contents from MMKV when initializing
@@ -49,19 +52,21 @@ class WriteViewModel @Inject constructor(
 
     // load content from uri, set readOnly mode
     fun loadMarkdown(uri: Uri?) {
+        targetId = -1
         uri?.let {
             val title = DocumentFile.fromSingleUri(CPApplication.context, it)?.name?:""
             viewModelScope.launch(Dispatchers.IO) {
                 val reader = CPApplication.context.contentResolver.openInputStream(it)?.reader()
                 val text = reader?.readText()?:""
-                _uiState.update { WriteUiState(title, text, true) } // If uri is invalid, then there will be no content displayed but empty screen.
 
+                _uiState.update { WriteUiState(title, text, true) }
             }
         }
     }
 
     // load content from database, set readOnly mode
     fun loadMarkdown(id: Int) {
+        targetId = id
         viewModelScope.launch(Dispatchers.IO) {
             val data = repository.getDataById(id).first()
             _uiState.update { WriteUiState(data.title, data.content, true) }
@@ -70,6 +75,7 @@ class WriteViewModel @Inject constructor(
 
     // load content from MMKV craft, set write mode
     fun loadCraft() {
+        targetId = -1
         _uiState.update {
             WriteUiState(
                 MMKVUtils.decodeString(PreferenceKeys.CRAFT_TITLE),
@@ -79,18 +85,42 @@ class WriteViewModel @Inject constructor(
         }
     }
 
-    fun saveMarkdown() {
-        Log.d(TAG, "saveMarkdown")
-        viewModelScope.launch {
-            repository.insertMarkdown(
-                MarkdownData(
-                title = _uiState.value.title,
-                content = _uiState.value.content,
-                uri = UriUtils.uri,
-                status = if (UriUtils.isUriValid) MarkdownData.STATUS_EXTERNAL else MarkdownData.STATUS_INTERNAL,
+    private suspend fun importMarkdown(title: String, text: String, uri: Uri) {
+        // import external file for further operation, since WRITE permission is not requested
+        repository.insertMarkdown(
+            MarkdownData(
+                title = title,
+                content = text,
+                uri = uri,
+                status = MarkdownData.STATUS_EXTERNAL,
                 isStarred = MarkdownData.NOT_STARRED
-                )
             )
+        )
+    }
+
+    fun saveMarkdown() {
+        // Must use main dispatcher to ensure that homeScreen collect data only after new data has been inserted.
+        viewModelScope.launch {
+            if (targetId != -1) {
+                // If from database, just modify the data content via primary key in database.
+                repository.updateContentById(MarkDownContent(
+                    id = targetId,
+                    title = _uiState.value.title,
+                    content = _uiState.value.content
+                ))
+            }
+            else {
+                // If from craft or uri, save the new markdown file into database.
+                repository.insertMarkdown(
+                    MarkdownData(
+                        title = _uiState.value.title,
+                        content = _uiState.value.content,
+                        uri = UriUtils.uri,
+                        status = if (UriUtils.isUriValid) MarkdownData.STATUS_EXTERNAL else MarkdownData.STATUS_INTERNAL,
+                        isStarred = MarkdownData.NOT_STARRED
+                    )
+                )
+            }
         }
         emptyCraft()
     }
@@ -122,6 +152,7 @@ class WriteViewModel @Inject constructor(
     }
 
     fun stashFile() {
+        // If automated backup is allowed by user, export markdown file to app external file directory.
         if (MMKVUtils.decodeBoolean(PreferenceKeys.AUTOMATED_BACKUP)) {
             val basePath = CPApplication.context.getExternalFilesDir(null)?.absolutePath
             val fileName = if (_uiState.value.title == "") "new.md" else _uiState.value.title + ".md"

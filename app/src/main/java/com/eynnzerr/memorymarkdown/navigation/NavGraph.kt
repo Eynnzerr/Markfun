@@ -12,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
+import com.eynnzerr.memorymarkdown.ui.about.AboutScreen
 import com.eynnzerr.memorymarkdown.utils.UriUtils
 import com.eynnzerr.memorymarkdown.ui.home.HomeScreen
 import com.eynnzerr.memorymarkdown.ui.home.HomeViewModel
@@ -24,6 +25,7 @@ object Destinations {
     const val HOME_ROUTE = "home"
     const val WRITE_ROUTE = "write"
     const val SETTING_ROUTE = "setting"
+    const val ABOUT_ROUTE = "about"
 }
 
 @ExperimentalFoundationApi
@@ -78,6 +80,11 @@ fun NavGraph(
             SettingScreen(
                 navController = navHostController,
                 viewModel = settingViewModel
+            )
+        }
+        composable(Destinations.ABOUT_ROUTE) {
+            AboutScreen(
+                navigateBack = { navHostController.popBackStack() }
             )
         }
     }

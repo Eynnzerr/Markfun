@@ -1,6 +1,7 @@
 package com.eynnzerr.memorymarkdown.ui.setting
 
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -152,7 +153,7 @@ fun SettingScreen(
             SettingItem(
                 resourceId = R.drawable.setting_about,
                 title = stringResource(id = R.string.setting_about)) {
-
+                navController.navigateTo(Destinations.ABOUT_ROUTE)
             }
         }
     }
@@ -177,31 +178,30 @@ private fun ColorPicker(colors: List<AppColor>, initialIndex: Int, onClickItem: 
 @Composable
 private fun ColorItem(color: AppColor, selected: Boolean, onSelectColor: (Int) -> Unit) {
     // 输入： 颜色和名称
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onSelectColor(color.colorArgb) }
-            .padding(vertical = 10.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        color = Color.Transparent,
+        border = BorderStroke(2.dp, if (selected) MaterialTheme.colorScheme.primary else Color.Transparent)
     ) {
-        Surface(
-            modifier = Modifier.size(48.dp),
-            shape = CircleShape,
-            color = Color(color.colorArgb)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onSelectColor(color.colorArgb) }
+                .padding(vertical = 10.dp, horizontal = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            if (selected) {
-                Icon(
-                    modifier = Modifier.size(24.dp),
-                    imageVector = Icons.Filled.Done,
-                    contentDescription = color.name
-                )
-            }
-        }
+            Surface(
+                modifier = Modifier.size(48.dp),
+                shape = CircleShape,
+                color = Color(color.colorArgb)
+            ) {}
 
-        Text(
-            text = color.name,
-            fontSize = 20.sp
-        )
+            Text(
+                text = color.name,
+                fontSize = 24.sp
+            )
+        }
     }
 }
