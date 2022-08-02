@@ -2,16 +2,12 @@ package com.eynnzerr.memorymarkdown.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.eynnzerr.memorymarkdown.data.MMKVUtils
-import com.eynnzerr.memorymarkdown.data.PreferenceKeys
 import com.eynnzerr.memorymarkdown.data.database.MarkdownData
 import com.eynnzerr.memorymarkdown.data.database.MarkdownRepository
 import com.eynnzerr.memorymarkdown.ui.write.markdown.MarkdownAgent
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -30,7 +26,7 @@ enum class HomeType {
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val repository: MarkdownRepository,
-    private val markdownAgent: MarkdownAgent
+    markdownAgent: MarkdownAgent
 ): ViewModel() {
     private val _uiState = MutableStateFlow(
         HomeUiState(
@@ -38,14 +34,28 @@ class HomeViewModel @Inject constructor(
             homeList = listOf()
         )
     )
-    val uiState = _uiState as StateFlow<HomeUiState>
+    val uiState = _uiState.asStateFlow()
 
     val markwon = markdownAgent.markwon
 
-    init {
-        viewModelScope.launch {
-            repository.getAllMdFlow().collect { created ->
-                _uiState.update { it.copy(homeList = created) }
+    private var homeList = emptyList<MarkdownData>()
+    lateinit var tempData: MarkdownData
+
+//    init {
+//        // register collector
+//        registerCollector()
+//    }
+
+    fun registerCollector() {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.getAllDataFlow().collect { newList ->
+                homeList = newList
+                when (_uiState.value.homeType) {
+                    HomeType.CREATED -> _uiState.update { it.copy(homeList = homeList.filter { data -> data.status == MarkdownData.STATUS_INTERNAL }) }
+                    HomeType.VIEWED -> _uiState.update { it.copy(homeList = homeList.filter { data -> data.status == MarkdownData.STATUS_EXTERNAL }) }
+                    HomeType.STARRED -> _uiState.update { it.copy(homeList = homeList.filter { data -> (data.isStarred == MarkdownData.IS_STARRED) and (data.status != MarkdownData.STATUS_ARCHIVED) }) }
+                    HomeType.ARCHIVED -> _uiState.update { it.copy(homeList = homeList.filter { data -> data.status == MarkdownData.STATUS_ARCHIVED }) }
+                }
             }
         }
     }
@@ -54,25 +64,33 @@ class HomeViewModel @Inject constructor(
         if (_uiState.value.homeType != type) {
             when (type) {
                 HomeType.CREATED -> {
-                    viewModelScope.launch {
-                        repository.getAllMdFlow().collect { created ->
-                            _uiState.update { HomeUiState(HomeType.CREATED, created) }
-                        }
-                    }
+                    _uiState.update { HomeUiState(HomeType.CREATED, homeList.filter { data -> data.status == MarkdownData.STATUS_INTERNAL }) }
                 }
                 HomeType.VIEWED -> {
-                    // TODO Fetch viewed data
-                    _uiState.update { HomeUiState(HomeType.VIEWED, emptyList()) }
+                    _uiState.update { HomeUiState(HomeType.VIEWED, homeList.filter { data -> data.status == MarkdownData.STATUS_EXTERNAL }) }
                 }
                 HomeType.STARRED -> {
-                    // TODO Fetch starred data
-                    _uiState.update { HomeUiState(HomeType.STARRED, emptyList()) }
+                    _uiState.update { HomeUiState(HomeType.STARRED, homeList.filter { data -> (data.isStarred == MarkdownData.IS_STARRED) and (data.status != MarkdownData.STATUS_ARCHIVED) }) }
                 }
                 HomeType.ARCHIVED -> {
-                    // TODO Fetch archived data
-                    _uiState.update { HomeUiState(HomeType.ARCHIVED, emptyList()) }
+                    _uiState.update { HomeUiState(HomeType.ARCHIVED, homeList.filter { data -> data.status == MarkdownData.STATUS_ARCHIVED }) }
                 }
             }
         }
     }
+
+    fun updateMarkdown(markdownData: MarkdownData) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.updateMarkdown(markdownData)
+        }
+    }
+
+    fun deleteMarkdown(markdownData: MarkdownData) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.deleteMarkdown(markdownData)
+        }
+    }
+
 }
+
+private const val TAG = "HomeViewModel"

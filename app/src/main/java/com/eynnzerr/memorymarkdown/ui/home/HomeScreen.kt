@@ -2,13 +2,17 @@ package com.eynnzerr.memorymarkdown.ui.home
 
 import android.annotation.SuppressLint
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -27,12 +31,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.eynnzerr.memorymarkdown.R
+import com.eynnzerr.memorymarkdown.data.database.MarkdownData
 import com.eynnzerr.memorymarkdown.utils.UriUtils
 import com.eynnzerr.memorymarkdown.navigation.Destinations
 import com.eynnzerr.memorymarkdown.navigation.navigateTo
 import kotlinx.coroutines.launch
+import kotlin.math.absoluteValue
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "Range")
+@ExperimentalFoundationApi
+@SuppressLint("Range")
 @ExperimentalAnimationApi
 @ExperimentalMaterial3Api
 @Composable
@@ -40,12 +47,13 @@ fun HomeScreen(
     navController: NavHostController,
     viewModel: HomeViewModel
 ) {
-    //
     val uiState by viewModel.uiState.collectAsState()
 
+    val listState = rememberLazyListState()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     var selectionExpanded by remember { mutableStateOf(false) }
+    var openDeleteDialog by remember { mutableStateOf(false) }
 
     var animalBoolean by remember { mutableStateOf(true) }
     val animalBooleanState: Float by animateFloatAsState(
@@ -64,8 +72,80 @@ fun HomeScreen(
                 uri = it
                 isUriValid = true
             }
-            navController.navigateTo(Destinations.WRITE_ROUTE)
+            navController.navigateTo(Destinations.WRITE_ROUTE + "/-1")
         }
+    }
+
+    if (openDeleteDialog) {
+        val hint = if (viewModel.tempData.status == MarkdownData.STATUS_ARCHIVED)
+                        stringResource(id = R.string.delete_permanently)
+                    else stringResource(id = R.string.delete_hint)
+        AlertDialog(
+            onDismissRequest = { openDeleteDialog = false },
+            text = {
+                Text(
+                    text = hint,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (viewModel.tempData.status == MarkdownData.STATUS_ARCHIVED) {
+                            viewModel.deleteMarkdown(viewModel.tempData)
+                        }
+                        else {
+                            viewModel.updateMarkdown(
+                                viewModel.tempData.copy(
+                                    status = MarkdownData.STATUS_ARCHIVED,
+                                    isStarred = MarkdownData.NOT_STARRED
+                                )
+                            )
+                        }
+                        openDeleteDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = MaterialTheme.colorScheme.onSurface
+                    ),
+                    elevation = null
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Done,
+                        contentDescription = null,
+                        modifier = Modifier.size(ButtonDefaults.IconSize)
+                    )
+                    Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+                    Text(
+                        text = stringResource(id = R.string.write_confirm),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = {
+                        openDeleteDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = MaterialTheme.colorScheme.onSurface
+                    ),
+                    elevation = null
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = null,
+                        modifier = Modifier.size(ButtonDefaults.IconSize)
+                    )
+                    Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+                    Text(
+                        text = stringResource(id = R.string.write_cancel),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
+        )
     }
 
     ModalNavigationDrawer(
@@ -101,6 +181,9 @@ fun HomeScreen(
                             title = stringResource(id = R.string.drawer_created),
                             isSelected = uiState.homeType == HomeType.CREATED) {
                             viewModel.switchType(HomeType.CREATED)
+                            scope.launch {
+                                drawerState.close()
+                            }
                         }
                         DrawerItem(
                             modifier = Modifier.padding(bottom = 8.dp),
@@ -108,6 +191,9 @@ fun HomeScreen(
                             title = stringResource(id = R.string.drawer_viewed),
                             isSelected = uiState.homeType == HomeType.VIEWED) {
                             viewModel.switchType(HomeType.VIEWED)
+                            scope.launch {
+                                drawerState.close()
+                            }
                         }
                         DrawerItem(
                             modifier = Modifier.padding(bottom = 8.dp),
@@ -115,6 +201,9 @@ fun HomeScreen(
                             title = stringResource(id = R.string.drawer_starred),
                             isSelected = uiState.homeType == HomeType.STARRED) {
                             viewModel.switchType(HomeType.STARRED)
+                            scope.launch {
+                                drawerState.close()
+                            }
                         }
                         DrawerItem(
                             modifier = Modifier.padding(bottom = 8.dp),
@@ -122,6 +211,9 @@ fun HomeScreen(
                             title = stringResource(id = R.string.drawer_archived),
                             isSelected = uiState.homeType == HomeType.ARCHIVED) {
                             viewModel.switchType(HomeType.ARCHIVED)
+                            scope.launch {
+                                drawerState.close()
+                            }
                         }
                     }
 
@@ -131,42 +223,46 @@ fun HomeScreen(
     ) {
         Scaffold(
             topBar = {
-                SmallTopAppBar(
-                    modifier = Modifier.statusBarsPadding(),
-                    title = {},
-                    navigationIcon = {
-                        IconButton(onClick = {
-                            scope.launch {
-                                drawerState.open()
+                Surface (
+                    shadowElevation = if (listState.isScrolled) 8.dp else 0.dp
+                ) {
+                    SmallTopAppBar(
+                        modifier = Modifier.statusBarsPadding(),
+                        title = {},
+                        navigationIcon = {
+                            IconButton(onClick = {
+                                scope.launch {
+                                    drawerState.open()
+                                }
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Menu,
+                                    contentDescription = null
+                                )
                             }
-                        }) {
-                            Icon(
-                                imageVector = Icons.Filled.Menu,
-                                contentDescription = null
-                            )
+                        },
+                        actions = {
+                            IconButton(onClick = { /*TODO*/ }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Sort,
+                                    contentDescription = null
+                                )
+                            }
+                            IconButton(onClick = { /*TODO*/ }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Search,
+                                    contentDescription = null
+                                )
+                            }
+                            IconButton(onClick = { /*TODO*/ }) {
+                                Icon(
+                                    imageVector = Icons.Filled.MoreVert,
+                                    contentDescription = null
+                                )
+                            }
                         }
-                    },
-                    actions = {
-                        IconButton(onClick = { /*TODO*/ }) {
-                            Icon(
-                                imageVector = Icons.Filled.Sort,
-                                contentDescription = null
-                            )
-                        }
-                        IconButton(onClick = { /*TODO*/ }) {
-                            Icon(
-                                imageVector = Icons.Filled.Search,
-                                contentDescription = null
-                            )
-                        }
-                        IconButton(onClick = { /*TODO*/ }) {
-                            Icon(
-                                imageVector = Icons.Filled.MoreVert,
-                                contentDescription = null
-                            )
-                        }
-                    }
-                )
+                    )
+                }
             },
             floatingActionButton = {
                 Row (
@@ -205,7 +301,7 @@ fun HomeScreen(
                                 )
                             }
                             FloatingActionButton(
-                                onClick = { navController.navigateTo(Destinations.WRITE_ROUTE) },
+                                onClick = { navController.navigateTo(Destinations.WRITE_ROUTE + "/-1") },
                                 shape = CircleShape,
                                 modifier = Modifier.padding(end = 20.dp)
                             ) {
@@ -234,16 +330,34 @@ fun HomeScreen(
                     }
                 }
             }
-        ) {
+        ) { it ->
             // Display logo when data is empty
             if (uiState.homeList.isEmpty()) {
                 Logo()
             }
             else {
                 HomeList(
-                    modifier = Modifier.padding(it),
+                    modifier = Modifier
+                        .padding(it)
+                        .navigationBarsPadding(),
                     dataList = uiState.homeList,
-                    markwon = viewModel.markwon
+                    markwon = viewModel.markwon,
+                    listState = listState,
+                    onStarredItem = { data ->
+                        viewModel.updateMarkdown(
+                            data.copy(isStarred = (data.isStarred-1).absoluteValue)
+                        )
+                    },
+                    onClickItem = { data ->
+                        data.uri?.let { uri ->
+                            UriUtils.prepareUri(uri)
+                        }
+                        navController.navigateTo(Destinations.WRITE_ROUTE + "/${data.id}")
+                    },
+                    onLongPressItem = {
+                        viewModel.tempData = it
+                        openDeleteDialog = true
+                    }
                 )
             }
         }
@@ -266,9 +380,13 @@ private fun Logo() {
         Text(
             text = stringResource(id = R.string.home_hint),
             fontSize = 15.sp,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.bodyMedium
         )
     }
 }
+
+private val LazyListState.isScrolled: Boolean
+    get() = firstVisibleItemIndex > 0 || firstVisibleItemScrollOffset > 0
 
 private const val TAG = "HomeScreen"

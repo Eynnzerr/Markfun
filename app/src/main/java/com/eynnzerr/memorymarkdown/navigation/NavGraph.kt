@@ -1,13 +1,16 @@
 package com.eynnzerr.memorymarkdown.navigation
 
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import com.eynnzerr.memorymarkdown.utils.UriUtils
 import com.eynnzerr.memorymarkdown.ui.home.HomeScreen
@@ -23,6 +26,7 @@ object Destinations {
     const val SETTING_ROUTE = "setting"
 }
 
+@ExperimentalFoundationApi
 @ExperimentalComposeUiApi
 @ExperimentalMaterial3Api
 @ExperimentalAnimationApi
@@ -37,18 +41,31 @@ fun NavGraph(
         route = "root"
     ) {
         composable(Destinations.HOME_ROUTE) {
-            val homeViewModel: HomeViewModel = hiltViewModel()
+            val homeViewModel = hiltViewModel<HomeViewModel>().apply {
+                registerCollector()
+            }
             HomeScreen(
                 navController = navHostController,
                 viewModel = homeViewModel
             )
         }
         composable(
-            Destinations.WRITE_ROUTE,
+            route = Destinations.WRITE_ROUTE + "/{dataId}",
+            arguments = listOf(
+                navArgument("dataId") {
+                    type = NavType.IntType
+                    defaultValue = -1
+                }
+            ),
             deepLinks = listOf(navDeepLink { mimeType = "text/markdown" })
         ) {
+            val id = it.arguments?.getInt("dataId")!!
             val writeViewModel = hiltViewModel<WriteViewModel>().apply {
-                if (UriUtils.isUriValid) loadMarkdown(UriUtils.uri)
+                // id != -1 indicates reading file from database. Load via Room.
+                if (id != -1) loadMarkdown(id)
+                // id == -1 & valid uri indicates reading file from SAF/deep link. Load via uri.
+                else if (UriUtils.isUriValid) loadMarkdown(UriUtils.uri)
+                // else indicates creating new file. Load via craft.
                 else loadCraft()
             }
             WriteScreen(

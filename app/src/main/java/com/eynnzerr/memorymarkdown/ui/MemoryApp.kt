@@ -1,6 +1,7 @@
 package com.eynnzerr.memorymarkdown.ui
 
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.*
@@ -13,6 +14,7 @@ import com.eynnzerr.memorymarkdown.data.MMKVUtils
 import com.eynnzerr.memorymarkdown.navigation.NavGraph
 import com.eynnzerr.memorymarkdown.ui.theme.MemoryMarkdownTheme
 
+@ExperimentalFoundationApi
 @ExperimentalComposeUiApi
 @ExperimentalAnimationApi
 @ExperimentalMaterial3Api

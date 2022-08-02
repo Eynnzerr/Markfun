@@ -17,6 +17,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -263,11 +264,12 @@ fun WriteScreen(
 
                         Button(
                             onClick = {
-                                val intent = Intent("android.intent.action.GET_CONTENT").apply {
-                                    type = "image/*"
-                                }
-                                selectPicture.launch(intent)
-                                insertImage = false
+                                  Toast.makeText(context, "This feature will be ready very soon!", Toast.LENGTH_SHORT).show()
+//                                val intent = Intent("android.intent.action.GET_CONTENT").apply {
+//                                    type = "image/*"
+//                                }
+//                                selectPicture.launch(intent)
+//                                insertImage = false
                             },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Color.Transparent,
@@ -394,8 +396,9 @@ fun WriteScreen(
                                 // Save/Stash to private folder
                                 viewModel.stashFile()
                                 viewModel.saveMarkdown()
-                                navController.navigateTo(Destinations.HOME_ROUTE)
+                                navController.popBackStack()
                                 keyboard?.hide()
+                                inputManager.hideSoftInputFromWindow(windowToken, 0)
                             }) {
                                 Icon(
                                     imageVector = Icons.Filled.Done,

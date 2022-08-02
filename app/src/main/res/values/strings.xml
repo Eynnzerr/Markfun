@@ -8,6 +8,8 @@
     <string name="drawer_viewed">Recently Viewed</string>
     <string name="drawer_starred">Starred</string>
     <string name="drawer_archived">Archived</string>
+    <string name="delete_hint">Do you wish to archive this file? It will be moved to archived files.</string>
+    <string name="delete_permanently">Do you wish to archive this file permanently?</string>
 
     <!--  WriteScreen.kt  -->
     <string name="write_title_holder">Title Here.</string>

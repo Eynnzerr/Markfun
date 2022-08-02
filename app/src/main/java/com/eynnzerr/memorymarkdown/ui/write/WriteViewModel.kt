@@ -6,19 +6,16 @@ import android.widget.Toast
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.eynnzerr.memorymarkdown.R
 import com.eynnzerr.memorymarkdown.base.CPApplication
 import com.eynnzerr.memorymarkdown.data.MMKVUtils
 import com.eynnzerr.memorymarkdown.data.PreferenceKeys
 import com.eynnzerr.memorymarkdown.data.database.MarkdownData
 import com.eynnzerr.memorymarkdown.data.database.MarkdownRepository
 import com.eynnzerr.memorymarkdown.ui.write.markdown.MarkdownAgent
+import com.eynnzerr.memorymarkdown.utils.UriUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
@@ -42,7 +39,7 @@ class WriteViewModel @Inject constructor(
                 content = MMKVUtils.decodeString(PreferenceKeys.CRAFT_CONTENTS)
             )
         )
-    val uiState: StateFlow<WriteUiState> = _uiState
+    val uiState = _uiState.asStateFlow()
 
     fun updateTitle(title: String) = _uiState.update { it.copy(title = title) }
 
@@ -50,7 +47,7 @@ class WriteViewModel @Inject constructor(
 
     fun updateMode() = _uiState.update { it.copy(isReadOnly = !it.isReadOnly) }
 
-    // 从Uri读取待阅读md文件 需设置只读模式
+    // load content from uri, set readOnly mode
     fun loadMarkdown(uri: Uri?) {
         uri?.let {
             val title = DocumentFile.fromSingleUri(CPApplication.context, it)?.name?:""
@@ -58,19 +55,20 @@ class WriteViewModel @Inject constructor(
                 val reader = CPApplication.context.contentResolver.openInputStream(it)?.reader()
                 val text = reader?.readText()?:""
                 _uiState.update { WriteUiState(title, text, true) } // If uri is invalid, then there will be no content displayed but empty screen.
+
             }
         }
     }
 
-    // 从Room读取待阅读md文件 需设置只读模式
-    fun loadMarkdown(title: String) {
+    // load content from database, set readOnly mode
+    fun loadMarkdown(id: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            val content = repository.getContentByTitle(title).first()
-            _uiState.update { WriteUiState(title, content, true) }
+            val data = repository.getDataById(id).first()
+            _uiState.update { WriteUiState(data.title, data.content, true) }
         }
     }
 
-    // 读取草稿
+    // load content from MMKV craft, set write mode
     fun loadCraft() {
         _uiState.update {
             WriteUiState(
@@ -82,8 +80,17 @@ class WriteViewModel @Inject constructor(
     }
 
     fun saveMarkdown() {
+        Log.d(TAG, "saveMarkdown")
         viewModelScope.launch {
-            repository.insertMarkdown(MarkdownData(title = _uiState.value.title, content = _uiState.value.content))
+            repository.insertMarkdown(
+                MarkdownData(
+                title = _uiState.value.title,
+                content = _uiState.value.content,
+                uri = UriUtils.uri,
+                status = if (UriUtils.isUriValid) MarkdownData.STATUS_EXTERNAL else MarkdownData.STATUS_INTERNAL,
+                isStarred = MarkdownData.NOT_STARRED
+                )
+            )
         }
         emptyCraft()
     }
@@ -99,19 +106,19 @@ class WriteViewModel @Inject constructor(
     }
 
     fun saveFileAs(uri: Uri) {
-        Log.d(TAG, "saveFileAs: enter method saveFileAs")
-        Log.d(TAG, "saveFileAs: saved content: ${_uiState.value.content}")
-        val content = _uiState.value.content // shallow copy
-        viewModelScope.launch(Dispatchers.IO) {
-            CPApplication.context.contentResolver.openOutputStream(uri)?.writer()?.run {
-                Log.d(TAG, "saveFileAs: saved content after entering coroutine: $content")
-                write(content)
-                flush()
-                close()
+        if (MMKVUtils.decodeBoolean(PreferenceKeys.AUTOMATED_BACKUP)) {
+            val content = _uiState.value.content // shallow copy
+            viewModelScope.launch(Dispatchers.IO) {
+                CPApplication.context.contentResolver.openOutputStream(uri)?.writer()?.run {
+                    Log.d(TAG, "saveFileAs: saved content after entering coroutine: $content")
+                    write(content)
+                    flush()
+                    close()
+                }
             }
+            Log.d(TAG, "saveFileAs: Done.")
+            Toast.makeText(CPApplication.context, "Successfully saved.", Toast.LENGTH_SHORT).show()
         }
-        Log.d(TAG, "saveFileAs: Done.")
-        Toast.makeText(CPApplication.context, "Successfully saved.", Toast.LENGTH_SHORT).show()
     }
 
     fun stashFile() {
