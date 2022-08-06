@@ -284,6 +284,18 @@ fun HomeScreen(
                                         viewModel.updateDisplayOrder(ListOrder.CREATED_DATE_DESCEND)
                                         openOrderMenu = false
                                     }
+                                    MenuItem(
+                                        title = stringResource(id = R.string.menu_modified_ascend),
+                                        selected = uiState.listOrder == ListOrder.MODIFIED_DATE_ASCEND) {
+                                        viewModel.updateDisplayOrder(ListOrder.MODIFIED_DATE_ASCEND)
+                                        openOrderMenu = false
+                                    }
+                                    MenuItem(
+                                        title = stringResource(id = R.string.menu_modified_descend),
+                                        selected = uiState.listOrder == ListOrder.MODIFIED_DATE_DESCEND) {
+                                        viewModel.updateDisplayOrder(ListOrder.MODIFIED_DATE_DESCEND)
+                                        openOrderMenu = false
+                                    }
                                 }
                             }
                             IconButton(onClick = { viewModel.updateDisplayMode() }) {

@@ -67,6 +67,7 @@ fun WriteScreen(
     navController: NavHostController,
     viewModel: WriteViewModel
 ) {
+    
     // viewModel
     val uiState by viewModel.uiState.collectAsState()
     val editor = viewModel.getEditor()

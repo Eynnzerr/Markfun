@@ -15,7 +15,7 @@
     <string name="menu_title_ascend">Title Alphabet (ascending)</string>
     <string name="menu_title_descend">Title Alphabet (descending)</string>
     <string name="menu_date_ascend">Created Date (ascending)</string>
-    <string name="menu_date_descend">Created Date(descending)</string>
+    <string name="menu_date_descend">Created Date (descending)</string>
     <string name="menu_modified_ascend">Modified Date (ascending)</string>
     <string name="menu_modified_descend">Modified Date (descending)</string>
     <string name="time_created">Created:</string>
