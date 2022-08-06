@@ -14,7 +14,7 @@ android {
         minSdk 26
         targetSdk 32
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0-alpha01"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -93,10 +93,8 @@ dependencies {
     implementation "androidx.hilt:hilt-navigation-compose:$hilt_navigation_compose_version"
     implementation "androidx.navigation:navigation-compose:$navigation_compose_version"
 
-    // material-dialogs
-    implementation "io.github.vanpra.compose-material-dialogs:color:0.8.1-rc"
-
     // androidx
+    implementation "androidx.core:core-splashscreen:1.0.0-rc01"
     implementation 'androidx.core:core-ktx:1.8.0'
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation 'androidx.compose.material3:material3:1.0.0-alpha14'

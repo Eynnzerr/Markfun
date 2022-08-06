@@ -47,7 +47,7 @@ fun HomeListItem(
                     onLongPress = { onLongPressed(data) }
                 )
             },
-        shadowElevation = 4.dp,
+        shadowElevation = 8.dp,
         shape = MaterialTheme.shapes.small
     ) {
         Column {

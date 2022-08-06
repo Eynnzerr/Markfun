@@ -11,6 +11,9 @@
     <string name="delete_hint">Do you wish to archive this file? It will be moved to archived files.</string>
     <string name="delete_permanently">Do you wish to archive this file permanently?</string>
 
+    <string name="title_created">Created</string>
+    <string name="title_viewed">Viewed</string>
+
     <!--  WriteScreen.kt  -->
     <string name="write_title_holder">Title Here.</string>
     <string name="write_content_holder">Enjoy your MarkDown now!</string>
@@ -36,4 +39,15 @@
     <string name="setting_advanced">Advanced</string>
     <string name="setting_save">Save Backup</string>
     <string name="setting_about">About</string>
+
+    <!--  AboutScreen.kt  -->
+    <string name="about_version">Version</string>
+    <string name="version_hint">Already the latest version.</string>
+    <string name="about_author">Author</string>
+    <string name="author_name">Eynnzerr(blog: eynnzerr.life)</string>
+    <string name="about_github">Github</string>
+    <string name="github_url">https://github.com/Eynnzerr/MemoryMarkdown</string>
+    <string name="about_libraries">Libraries</string>
+    <string name="libraries_description">View used open source libraries</string>
+
 </resources>

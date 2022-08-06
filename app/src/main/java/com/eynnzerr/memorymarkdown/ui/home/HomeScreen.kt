@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -228,7 +229,7 @@ fun HomeScreen(
                 ) {
                     SmallTopAppBar(
                         modifier = Modifier.statusBarsPadding(),
-                        title = {},
+                        title = { HomeBarTitle(type = uiState.homeType) },
                         navigationIcon = {
                             IconButton(onClick = {
                                 scope.launch {
@@ -362,6 +363,21 @@ fun HomeScreen(
             }
         }
     }
+}
+
+@Composable
+private fun HomeBarTitle(type: HomeType) {
+    val title = when (type) {
+        HomeType.CREATED -> stringResource(id = R.string.title_created)
+        HomeType.VIEWED -> stringResource(id = R.string.title_viewed)
+        HomeType.STARRED -> stringResource(id = R.string.drawer_starred)
+        HomeType.ARCHIVED -> stringResource(id = R.string.drawer_archived)
+    }
+    Text(
+        text = title,
+        style = MaterialTheme.typography.titleLarge,
+        modifier = Modifier.padding(horizontal = 12.dp)
+    )
 }
 
 @Composable

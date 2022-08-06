@@ -24,6 +24,9 @@ interface MarkdownDao {
     @Query("SELECT * FROM markdown WHERE id = :id")
     fun getDataById(id: Int): Flow<MarkdownData>
 
+    @Query("SELECT * FROM markdown WHERE title LIKE '%' || :keyword || '%'")
+    fun searchDataByKeyword(keyword: String): Flow<List<MarkdownData>>
+
     @Update
     suspend fun updateMarkdown(vararg markdown: MarkdownData)
 
