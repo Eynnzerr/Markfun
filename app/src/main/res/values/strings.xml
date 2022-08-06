@@ -10,9 +10,16 @@
     <string name="drawer_archived">Archived</string>
     <string name="delete_hint">Do you wish to archive this file? It will be moved to archived files.</string>
     <string name="delete_permanently">Do you wish to archive this file permanently?</string>
-
     <string name="title_created">Created</string>
     <string name="title_viewed">Viewed</string>
+    <string name="menu_title_ascend">Title Alphabet (ascending)</string>
+    <string name="menu_title_descend">Title Alphabet (descending)</string>
+    <string name="menu_date_ascend">Created Date (ascending)</string>
+    <string name="menu_date_descend">Created Date(descending)</string>
+    <string name="menu_modified_ascend">Modified Date (ascending)</string>
+    <string name="menu_modified_descend">Modified Date (descending)</string>
+    <string name="time_created">Created:</string>
+    <string name="time_modified">Modified:</string>
 
     <!--  WriteScreen.kt  -->
     <string name="write_title_holder">Title Here.</string>
@@ -35,10 +42,12 @@
     <string name="setting_theme_hint">Choose a favorite color</string>
     <string name="setting_confirm">Confirm</string>
     <string name="setting_cancel">Cancel</string>
-
     <string name="setting_advanced">Advanced</string>
     <string name="setting_save">Save Backup</string>
     <string name="setting_about">About</string>
+
+    <!--  SearchScreen.kt  -->
+    <string name="search_text">Search</string>
 
     <!--  AboutScreen.kt  -->
     <string name="about_version">Version</string>
@@ -49,5 +58,64 @@
     <string name="github_url">https://github.com/Eynnzerr/MemoryMarkdown</string>
     <string name="about_libraries">Libraries</string>
     <string name="libraries_description">View used open source libraries</string>
+    <string name="library_credits">
+        **Markwon** on which this project heavily depends as markdown renderer.\n\n
+        ```\n  Copyright 2020 Dimitry Ivanov
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.\n```\n\n
+
+        **Quillnote** whose UI design and `EditHandler` are used for inference.\n\n
+        ```\nCopyright © 2022 msoultanidis
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.\n```\n\n
+
+        **material-color-utilities** which we use to support Material You color scheme.\n\n
+        ```\n Copyright 2022 material-foundation
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.\n```\n\n
+
+        **MMKV** which we use for preference storage.\n\n
+        ```\n Copyright 2022 Tencent
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.\n```\n\n
+    </string>
 
 </resources>

@@ -1,8 +1,6 @@
 package com.eynnzerr.memorymarkdown.ui.home
 
 import android.annotation.SuppressLint
-import android.util.Log
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
@@ -12,6 +10,8 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,12 +26,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.eynnzerr.memorymarkdown.R
+import com.eynnzerr.memorymarkdown.data.ListDisplayMode
+import com.eynnzerr.memorymarkdown.data.ListOrder
 import com.eynnzerr.memorymarkdown.data.database.MarkdownData
 import com.eynnzerr.memorymarkdown.utils.UriUtils
 import com.eynnzerr.memorymarkdown.navigation.Destinations
@@ -51,10 +52,12 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     val listState = rememberLazyListState()
+    val gridState = rememberLazyGridState()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     var selectionExpanded by remember { mutableStateOf(false) }
     var openDeleteDialog by remember { mutableStateOf(false) }
+    var openOrderMenu by remember { mutableStateOf(false) }
 
     var animalBoolean by remember { mutableStateOf(true) }
     val animalBooleanState: Float by animateFloatAsState(
@@ -64,7 +67,7 @@ fun HomeScreen(
             1f
         }, animationSpec = TweenSpec(durationMillis = 600)
     )
-    
+
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) {
@@ -225,7 +228,9 @@ fun HomeScreen(
         Scaffold(
             topBar = {
                 Surface (
-                    shadowElevation = if (listState.isScrolled) 8.dp else 0.dp
+                    shadowElevation = if (
+                        (listState.isScrolled && uiState.listDisplay == ListDisplayMode.IN_LIST) ||
+                        (gridState.isScrolled && uiState.listDisplay == ListDisplayMode.IN_GRID)) 8.dp else 0.dp
                 ) {
                     SmallTopAppBar(
                         modifier = Modifier.statusBarsPadding(),
@@ -243,21 +248,53 @@ fun HomeScreen(
                             }
                         },
                         actions = {
-                            IconButton(onClick = { /*TODO*/ }) {
+                            Box {
+                                IconButton(onClick = { openOrderMenu = true }) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Sort,
+                                        contentDescription = null
+                                    )
+                                }
+                                DropdownMenu(
+                                    expanded = openOrderMenu,
+                                    onDismissRequest = { openOrderMenu = false }) {
+                                    MenuItem(
+                                        title = stringResource(id = R.string.menu_title_ascend),
+                                        selected = uiState.listOrder == ListOrder.TITLE_ASCEND
+                                    ) {
+                                        viewModel.updateDisplayOrder(ListOrder.TITLE_ASCEND)
+                                        openOrderMenu = false
+                                    }
+                                    MenuItem(
+                                        title = stringResource(id = R.string.menu_title_descend),
+                                        selected = uiState.listOrder == ListOrder.TITLE_DESCEND
+                                    ) {
+                                        viewModel.updateDisplayOrder(ListOrder.TITLE_DESCEND)
+                                        openOrderMenu = false
+                                    }
+                                    MenuItem(
+                                        title = stringResource(id = R.string.menu_date_ascend),
+                                        selected = uiState.listOrder == ListOrder.CREATED_DATE_ASCEND) {
+                                        viewModel.updateDisplayOrder(ListOrder.CREATED_DATE_ASCEND)
+                                        openOrderMenu = false
+                                    }
+                                    MenuItem(
+                                        title = stringResource(id = R.string.menu_date_descend),
+                                        selected = uiState.listOrder == ListOrder.CREATED_DATE_DESCEND) {
+                                        viewModel.updateDisplayOrder(ListOrder.CREATED_DATE_DESCEND)
+                                        openOrderMenu = false
+                                    }
+                                }
+                            }
+                            IconButton(onClick = { viewModel.updateDisplayMode() }) {
                                 Icon(
-                                    imageVector = Icons.Filled.Sort,
+                                    imageVector = if (uiState.listDisplay == ListDisplayMode.IN_GRID) Icons.Filled.GridView else Icons.Filled.List,
                                     contentDescription = null
                                 )
                             }
-                            IconButton(onClick = { /*TODO*/ }) {
+                            IconButton(onClick = { navController.navigateTo(Destinations.SEARCH_ROUTE) }) {
                                 Icon(
                                     imageVector = Icons.Filled.Search,
-                                    contentDescription = null
-                                )
-                            }
-                            IconButton(onClick = { /*TODO*/ }) {
-                                Icon(
-                                    imageVector = Icons.Filled.MoreVert,
                                     contentDescription = null
                                 )
                             }
@@ -337,13 +374,25 @@ fun HomeScreen(
                 Logo()
             }
             else {
-                HomeList(
+                val presentList = when (uiState.listOrder) {
+                    ListOrder.TITLE_ASCEND -> uiState.homeList.sortedBy { it.title }
+                    ListOrder.TITLE_DESCEND -> uiState.homeList.sortedByDescending { it.title }
+                    ListOrder.CREATED_DATE_ASCEND -> uiState.homeList.sortedBy { it.createdDate }
+                    ListOrder.CREATED_DATE_DESCEND -> uiState.homeList.sortedByDescending { it.createdDate }
+                    ListOrder.MODIFIED_DATE_ASCEND -> uiState.homeList.sortedBy { it.modifiedDate }
+                    ListOrder.MODIFIED_DATE_DESCEND -> uiState.homeList.sortedByDescending { it.modifiedDate }
+                    else -> uiState.homeList
+                }
+
+                HomeDisplay(
                     modifier = Modifier
                         .padding(it)
                         .navigationBarsPadding(),
-                    dataList = uiState.homeList,
+                    displayMode = uiState.listDisplay,
+                    dataList = presentList,
                     markwon = viewModel.markwon,
                     listState = listState,
+                    gridState = gridState,
                     onStarredItem = { data ->
                         viewModel.updateMarkdown(
                             data.copy(isStarred = (data.isStarred-1).absoluteValue)
@@ -402,7 +451,33 @@ private fun Logo() {
     }
 }
 
+@ExperimentalMaterial3Api
+@Composable
+private fun MenuItem(title: String, selected: Boolean, onClick: () -> Unit) {
+    DropdownMenuItem(
+        text = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 6.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = title)
+                RadioButton(
+                    selected = selected,
+                    onClick = onClick
+                )
+            }
+        },
+        onClick = onClick
+    )
+}
+
 private val LazyListState.isScrolled: Boolean
+    get() = firstVisibleItemIndex > 0 || firstVisibleItemScrollOffset > 0
+
+private val LazyGridState.isScrolled: Boolean
     get() = firstVisibleItemIndex > 0 || firstVisibleItemScrollOffset > 0
 
 private const val TAG = "HomeScreen"

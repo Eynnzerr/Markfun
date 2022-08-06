@@ -13,9 +13,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import com.eynnzerr.memorymarkdown.ui.about.AboutScreen
+import com.eynnzerr.memorymarkdown.ui.about.AboutViewModel
 import com.eynnzerr.memorymarkdown.utils.UriUtils
 import com.eynnzerr.memorymarkdown.ui.home.HomeScreen
 import com.eynnzerr.memorymarkdown.ui.home.HomeViewModel
+import com.eynnzerr.memorymarkdown.ui.search.SearchScreen
+import com.eynnzerr.memorymarkdown.ui.search.SearchViewModel
 import com.eynnzerr.memorymarkdown.ui.setting.SettingScreen
 import com.eynnzerr.memorymarkdown.ui.setting.SettingViewModel
 import com.eynnzerr.memorymarkdown.ui.write.WriteScreen
@@ -26,6 +29,7 @@ object Destinations {
     const val WRITE_ROUTE = "write"
     const val SETTING_ROUTE = "setting"
     const val ABOUT_ROUTE = "about"
+    const val SEARCH_ROUTE = "search"
 }
 
 @ExperimentalFoundationApi
@@ -83,8 +87,17 @@ fun NavGraph(
             )
         }
         composable(Destinations.ABOUT_ROUTE) {
+            val aboutViewModel: AboutViewModel = hiltViewModel()
             AboutScreen(
-                navigateBack = { navHostController.popBackStack() }
+                navigateBack = { navHostController.popBackStack() },
+                viewModel = aboutViewModel
+            )
+        }
+        composable(Destinations.SEARCH_ROUTE) {
+            val searchViewModel: SearchViewModel = hiltViewModel()
+            SearchScreen(
+                viewModel = searchViewModel,
+                navController = navHostController
             )
         }
     }

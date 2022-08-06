@@ -136,19 +136,17 @@ class WriteViewModel @Inject constructor(
     }
 
     fun saveFileAs(uri: Uri) {
-        if (MMKVUtils.decodeBoolean(PreferenceKeys.AUTOMATED_BACKUP)) {
-            val content = _uiState.value.content // shallow copy
-            viewModelScope.launch(Dispatchers.IO) {
-                CPApplication.context.contentResolver.openOutputStream(uri)?.writer()?.run {
-                    Log.d(TAG, "saveFileAs: saved content after entering coroutine: $content")
-                    write(content)
-                    flush()
-                    close()
-                }
+        val content = _uiState.value.content // shallow copy
+        viewModelScope.launch(Dispatchers.IO) {
+            CPApplication.context.contentResolver.openOutputStream(uri)?.writer()?.run {
+                Log.d(TAG, "saveFileAs: saved content after entering coroutine: $content")
+                write(content)
+                flush()
+                close()
             }
-            Log.d(TAG, "saveFileAs: Done.")
-            Toast.makeText(CPApplication.context, "Successfully saved.", Toast.LENGTH_SHORT).show()
         }
+        Log.d(TAG, "saveFileAs: Done.")
+        Toast.makeText(CPApplication.context, "Successfully saved.", Toast.LENGTH_SHORT).show()
     }
 
     fun stashFile() {

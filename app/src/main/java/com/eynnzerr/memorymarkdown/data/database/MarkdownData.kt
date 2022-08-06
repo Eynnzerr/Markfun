@@ -5,6 +5,8 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @Entity(tableName = "markdown")
 @TypeConverters(UriConverter::class)
@@ -17,7 +19,11 @@ data class MarkdownData(
     @ColumnInfo(defaultValue = "0")
     var status: Int = STATUS_INTERNAL,
     @ColumnInfo(defaultValue = "0")
-    var isStarred: Int = NOT_STARRED
+    var isStarred: Int = NOT_STARRED,
+    @ColumnInfo(defaultValue = "empty")
+    var createdDate: String = LocalDateTime.now().format(formatter),
+    @ColumnInfo(defaultValue = "empty")
+    var modifiedDate: String = LocalDateTime.now().format(formatter)
 ) {
     constructor(
         title: String,
@@ -34,6 +40,7 @@ data class MarkdownData(
     }
 
     companion object {
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")!!
         const val STATUS_INTERNAL = 0
         const val STATUS_EXTERNAL = 1
         const val STATUS_ARCHIVED = 2

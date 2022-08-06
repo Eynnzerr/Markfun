@@ -1,23 +1,15 @@
 package com.eynnzerr.memorymarkdown.ui.setting
 
 import android.widget.Toast
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.eynnzerr.memorymarkdown.R
 import com.eynnzerr.memorymarkdown.navigation.Destinations
@@ -155,53 +147,6 @@ fun SettingScreen(
                 title = stringResource(id = R.string.setting_about)) {
                 navController.navigateTo(Destinations.ABOUT_ROUTE)
             }
-        }
-    }
-}
-
-@Composable
-private fun ColorPicker(colors: List<AppColor>, initialIndex: Int, onClickItem: (Int, Int) -> Unit) {
-    var selectedIndex by remember { mutableStateOf(initialIndex) }
-    LazyColumn(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
-        itemsIndexed(colors) { index, color ->
-            ColorItem(color = color, selected = index == selectedIndex) {
-                onClickItem(it, index)
-                selectedIndex = index
-            }
-        }
-    }
-}
-
-@Composable
-private fun ColorItem(color: AppColor, selected: Boolean, onSelectColor: (Int) -> Unit) {
-    // 输入： 颜色和名称
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        color = Color.Transparent,
-        border = BorderStroke(2.dp, if (selected) MaterialTheme.colorScheme.primary else Color.Transparent)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onSelectColor(color.colorArgb) }
-                .padding(vertical = 10.dp, horizontal = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Surface(
-                modifier = Modifier.size(48.dp),
-                shape = CircleShape,
-                color = Color(color.colorArgb)
-            ) {}
-
-            Text(
-                text = color.name,
-                fontSize = 24.sp
-            )
         }
     }
 }

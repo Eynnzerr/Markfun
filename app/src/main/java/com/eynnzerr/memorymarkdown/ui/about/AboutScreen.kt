@@ -3,39 +3,71 @@ package com.eynnzerr.memorymarkdown.ui.about
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.widget.TextView
 import android.widget.Toast
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import com.eynnzerr.memorymarkdown.R
 
 @ExperimentalMaterial3Api
 @Composable
 fun AboutScreen(
-    navigateBack: () -> Unit
+    navigateBack: () -> Unit,
+    viewModel: AboutViewModel
 ) {
 
     val context = LocalContext.current
     val versionName = context.packageManager.getPackageInfo(context.packageName, 0).versionName
+    val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
+    val scrollState = rememberScrollState()
     var browseLibrary by remember { mutableStateOf(false) }
 
     if (browseLibrary) {
         AlertDialog(
             onDismissRequest = { browseLibrary = false },
-            text = {},
+            text = {
+                AndroidView(
+                    factory = { context ->
+                        TextView(context).apply {
+                            setTextColor(textColor)
+                            viewModel.markwon.setMarkdown(this, context.resources.getString(R.string.library_credits))
+                        }
+                    },
+                    modifier = Modifier.verticalScroll(scrollState)
+                )
+            },
             confirmButton = {
-
+                Button(
+                    onClick = {
+                        browseLibrary = false
+                    },
+                    elevation = null
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.CheckCircle,
+                        contentDescription = stringResource(id = R.string.setting_confirm),
+                        modifier = Modifier.size(ButtonDefaults.IconSize)
+                    )
+                    Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+                    Text(
+                        text = stringResource(id = R.string.setting_confirm),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
             },
         )
     }

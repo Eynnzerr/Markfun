@@ -22,12 +22,15 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -77,13 +80,14 @@ fun WriteScreen(
     var isDialogOpen by remember { mutableStateOf(false) }
 
     // Others
+    val scrollState = rememberScrollState()
     var optionId by remember { mutableStateOf(0) }
     var imageUrl by remember { mutableStateOf("") }
     var imageName by remember { mutableStateOf("") }
     var isContentFocused by remember { mutableStateOf(false) }
     val keyboard = LocalSoftwareKeyboardController.current
     val context = LocalContext.current
-    val textColor = if (isSystemInDarkTheme()) Color.White.toArgb() else Color.Black.toArgb()
+    val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
 
     // AndroidView softInput management
     val inputManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -501,7 +505,9 @@ fun WriteScreen(
                             markwon.setMarkdown(this, uiState.content)
                         }
                     },
-                    modifier = Modifier.padding(top = 23.dp, start = 17.dp, bottom = 13.dp, end = 13.dp),
+                    modifier = Modifier
+                        .padding(top = 23.dp, start = 17.dp, bottom = 13.dp, end = 13.dp)
+                        .verticalScroll(scrollState),
                     update = { textView ->
                         markwon.setMarkdown(textView, uiState.content)
                     }
@@ -551,7 +557,9 @@ fun WriteScreen(
                             setOnFocusChangeListener { _, hasFocus -> isContentFocused = hasFocus }
                         }
                     },
-                    modifier = Modifier.padding(13.dp),
+                    modifier = Modifier
+                        .padding(13.dp)
+                        .verticalScroll(scrollState),
                     update = { editText ->
                         if (optionId != 0) {
                             val option = when (optionId) {

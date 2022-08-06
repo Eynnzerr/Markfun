@@ -55,12 +55,12 @@ class MarkdownAgent @Inject constructor() {
 
     }
 
-    fun enableLatexMarkwon(textView: TextView): Markwon {
-        return defaultBuilder
-            .usePlugin(MarkwonInlineParserPlugin.create())
-            .usePlugin(JLatexMathPlugin.create(textView.textSize) {
-                    builder -> builder.inlinesEnabled(true)
-            })
-            .build()
-    }
+//    fun enableLatexMarkwon(textView: TextView): Markwon {
+//        return defaultBuilder
+//            .usePlugin(MarkwonInlineParserPlugin.create())
+//            .usePlugin(JLatexMathPlugin.create(textView.textSize) {
+//                    builder -> builder.inlinesEnabled(true)
+//            })
+//            .build()
+//    }
 }

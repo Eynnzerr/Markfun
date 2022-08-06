@@ -5,15 +5,30 @@ import com.tencent.mmkv.MMKV
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import javax.inject.Inject
 
 object PreferenceKeys {
     const val CRAFT_TITLE = "craft_title"
     const val CRAFT_CONTENTS = "craft_contents"
     const val AUTOMATED_BACKUP = "preference_backup"
-    const val APP_THEME_COLOR = "preference_app_theme"
+    const val APP_THEME_COLOR = "app_theme"
     const val APP_THEME_INDEX = "app_theme_index"
-    const val MD_THEME_COLOR = "preference_md_theme"
+    const val MD_THEME_COLOR = "md_theme"
+    const val LIST_DISPLAY = "list_display"
+    const val LIST_ORDER = "list_order"
+}
+
+object ListDisplayMode {
+    const val IN_LIST = 0
+    const val IN_GRID = 1
+}
+
+object ListOrder {
+    const val TITLE_ASCEND = 0
+    const val TITLE_DESCEND = 1
+    const val CREATED_DATE_ASCEND = 2
+    const val CREATED_DATE_DESCEND = 3
+    const val MODIFIED_DATE_ASCEND = 4
+    const val MODIFIED_DATE_DESCEND = 5
 }
 
 data class ThemeState(
@@ -30,7 +45,7 @@ object MMKVUtils {
 
     // int
     fun encodeInt(key: String, value: Int) = mv.encode(key, value)
-    fun decodeInt(key: String, value: Int) = mv.decodeInt(key)
+    fun decodeInt(key: String, defaultValue: Int) = mv.decodeInt(key, defaultValue)
 
     fun updateAppTheme(color: Int, index: Int) {
         encodeInt(PreferenceKeys.APP_THEME_COLOR, color)
