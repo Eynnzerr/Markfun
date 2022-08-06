@@ -1,5 +1,6 @@
 package com.eynnzerr.memorymarkdown.ui.home
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eynnzerr.memorymarkdown.data.ListDisplayMode
@@ -8,6 +9,7 @@ import com.eynnzerr.memorymarkdown.data.MMKVUtils
 import com.eynnzerr.memorymarkdown.data.PreferenceKeys
 import com.eynnzerr.memorymarkdown.data.database.MarkdownData
 import com.eynnzerr.memorymarkdown.data.database.MarkdownRepository
+import com.eynnzerr.memorymarkdown.ui.mainActivityReady
 import com.eynnzerr.memorymarkdown.ui.write.markdown.MarkdownAgent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -60,6 +62,8 @@ class HomeViewModel @Inject constructor(
                     HomeType.STARRED -> _uiState.update { it.copy(homeList = homeList.filter { data -> (data.isStarred == MarkdownData.IS_STARRED) and (data.status != MarkdownData.STATUS_ARCHIVED) }) }
                     HomeType.ARCHIVED -> _uiState.update { it.copy(homeList = homeList.filter { data -> data.status == MarkdownData.STATUS_ARCHIVED }) }
                 }
+                Log.d(TAG, "registerCollector: data is ready.")
+                mainActivityReady = true
             }
         }
     }

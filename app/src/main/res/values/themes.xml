@@ -4,5 +4,8 @@
     <style name="Theme.MemoryMarkdown" parent="android:Theme.Material.Light.NoActionBar" />
 
     <!--  SplashScreen Theme  -->
-    <style name="Theme.MemoryMarkdown.SplashScreen" parent="Theme.SplashScreen" />
+    <style name="Theme.MemoryMarkdown.SplashScreen" parent="Theme.SplashScreen">
+        <item name="postSplashScreenTheme">@style/Theme.MemoryMarkdown</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_markdown_slogan</item>
+    </style>
 </resources>

@@ -146,7 +146,7 @@ fun SettingScreen(
             SettingItem(
                 resourceId = R.drawable.setting_about,
                 title = stringResource(id = R.string.setting_about)) {
-                navController.navigateToSingle(gitDestinations.ABOUT_ROUTE)
+                navController.navigateToSingle(Destinations.ABOUT_ROUTE)
             }
         }
     }

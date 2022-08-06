@@ -4,6 +4,8 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.view.ViewTreeObserver
 import android.view.Window
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -19,6 +21,8 @@ import com.eynnzerr.memorymarkdown.ui.theme.MemoryMarkdownTheme
 import com.eynnzerr.memorymarkdown.utils.UriUtils
 import com.tencent.mmkv.MMKV
 import dagger.hilt.android.AndroidEntryPoint
+
+var mainActivityReady = false
 
 @ExperimentalFoundationApi
 @ExperimentalComposeUiApi
@@ -39,6 +43,25 @@ class MainActivity : ComponentActivity() {
         setContent {
             MemoryApp()
         }
+
+        val content = findViewById<View>(android.R.id.content)
+        content.viewTreeObserver.addOnPreDrawListener(
+            object : ViewTreeObserver.OnPreDrawListener {
+                override fun onPreDraw(): Boolean {
+                    // Check if home data is ready.
+                    return if (mainActivityReady) {
+                        // The content is ready; start drawing.
+                        Log.d(TAG, "onPreDraw: ready to draw homeScreen.")
+                        content.viewTreeObserver.removeOnPreDrawListener(this)
+                        true
+                    } else {
+                        // The content is not ready; suspend.
+                        Log.d(TAG, "onPreDraw: not ready yet.")
+                        false
+                    }
+                }
+            }
+        )
     }
 }
 
