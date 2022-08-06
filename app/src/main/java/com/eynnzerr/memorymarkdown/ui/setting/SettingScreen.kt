@@ -14,6 +14,7 @@ import androidx.navigation.NavHostController
 import com.eynnzerr.memorymarkdown.R
 import com.eynnzerr.memorymarkdown.navigation.Destinations
 import com.eynnzerr.memorymarkdown.navigation.navigateTo
+import com.eynnzerr.memorymarkdown.navigation.navigateToSingle
 
 private const val TAG = "SettingScreen"
 
@@ -145,7 +146,7 @@ fun SettingScreen(
             SettingItem(
                 resourceId = R.drawable.setting_about,
                 title = stringResource(id = R.string.setting_about)) {
-                navController.navigateTo(Destinations.ABOUT_ROUTE)
+                navController.navigateToSingle(gitDestinations.ABOUT_ROUTE)
             }
         }
     }

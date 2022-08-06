@@ -6,7 +6,6 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 
 fun NavController.navigateTo(route: String) {
     navigate(route) {
-        Log.d(TAG, "navigateTo: popuptoId: ${graph.findStartDestination().id}")
         popUpTo(graph.findStartDestination().id) {
             saveState = true
         }

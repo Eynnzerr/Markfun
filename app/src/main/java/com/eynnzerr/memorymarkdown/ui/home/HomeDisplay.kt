@@ -1,9 +1,11 @@
 package com.eynnzerr.memorymarkdown.ui.home
 
 import android.widget.TextView
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -54,7 +56,8 @@ fun HomeListItem(
                 )
             },
         shadowElevation = 8.dp,
-        shape = MaterialTheme.shapes.small
+        shape = MaterialTheme.shapes.small,
+        border = if (isSystemInDarkTheme()) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
     ) {
         Column {
             Surface(

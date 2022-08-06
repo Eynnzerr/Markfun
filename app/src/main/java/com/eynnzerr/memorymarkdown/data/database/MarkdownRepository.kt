@@ -3,6 +3,7 @@ package com.eynnzerr.memorymarkdown.data.database
 import android.util.Log
 import com.eynnzerr.memorymarkdown.base.CPApplication
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 class MarkdownRepository @Inject constructor() {
@@ -15,6 +16,7 @@ class MarkdownRepository @Inject constructor() {
     fun getArchivedFlow() = dao.getArchivedMarkdown()
     fun getStarredFlow() = dao.getStarredMarkdown()
     fun getDataById(id: Int) = dao.getDataById(id)
+    suspend fun searchDataByKeyword(keyword: String) = if (keyword == "") emptyList<MarkdownData>() else dao.searchDataByKeyword(keyword).first()
 
     // CUD
     suspend fun updateMarkdown(vararg markdown: MarkdownData) = dao.updateMarkdown(*markdown)

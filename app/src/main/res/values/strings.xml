@@ -48,6 +48,8 @@
 
     <!--  SearchScreen.kt  -->
     <string name="search_text">Search</string>
+    <string name="search_hint">Input your keyword.</string>
+    <string name="not_found">No result found.</string>
 
     <!--  AboutScreen.kt  -->
     <string name="about_version">Version</string>

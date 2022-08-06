@@ -322,7 +322,6 @@ fun HomeScreen(
                                 Icon(
                                     imageVector = Icons.Filled.Settings,
                                     contentDescription = null,
-                                    // tint = IconColor
                                 )
                             }
                             FloatingActionButton(
@@ -335,7 +334,6 @@ fun HomeScreen(
                                 Icon(
                                     imageVector = Icons.Filled.FileOpen,
                                     contentDescription = null,
-                                    // tint = IconColor
                                 )
                             }
                             FloatingActionButton(
@@ -346,7 +344,6 @@ fun HomeScreen(
                                 Icon(
                                     imageVector = Icons.Filled.Edit,
                                     contentDescription = null,
-                                    // tint = IconColor
                                 )
                             }
                         }
@@ -362,13 +359,12 @@ fun HomeScreen(
                         Icon(
                             imageVector = Icons.Filled.HomeRepairService,
                             contentDescription = null,
-                            // tint = IconColor,
                             modifier = Modifier.rotate(animalBooleanState * 360)
                         )
                     }
                 }
             }
-        ) { it ->
+        ) { paddingValues ->
             // Display logo when data is empty
             if (uiState.homeList.isEmpty()) {
                 Logo()
@@ -386,7 +382,7 @@ fun HomeScreen(
 
                 HomeDisplay(
                     modifier = Modifier
-                        .padding(it)
+                        .padding(paddingValues)
                         .navigationBarsPadding(),
                     displayMode = uiState.listDisplay,
                     dataList = presentList,
@@ -474,7 +470,7 @@ private fun MenuItem(title: String, selected: Boolean, onClick: () -> Unit) {
     )
 }
 
-private val LazyListState.isScrolled: Boolean
+val LazyListState.isScrolled: Boolean
     get() = firstVisibleItemIndex > 0 || firstVisibleItemScrollOffset > 0
 
 private val LazyGridState.isScrolled: Boolean
