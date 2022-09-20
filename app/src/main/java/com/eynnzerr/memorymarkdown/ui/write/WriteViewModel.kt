@@ -12,6 +12,7 @@ import com.eynnzerr.memorymarkdown.data.PreferenceKeys
 import com.eynnzerr.memorymarkdown.data.database.MarkDownContent
 import com.eynnzerr.memorymarkdown.data.database.MarkdownData
 import com.eynnzerr.memorymarkdown.data.database.MarkdownRepository
+import com.eynnzerr.memorymarkdown.ui.mainActivityReady
 import com.eynnzerr.memorymarkdown.ui.write.markdown.MarkdownAgent
 import com.eynnzerr.memorymarkdown.utils.UriUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -60,6 +61,9 @@ class WriteViewModel @Inject constructor(
                 val text = reader?.readText()?:""
 
                 _uiState.update { WriteUiState(title, text, true) }
+
+                // Main activity not ready indicates app is cold launched.
+                if (!mainActivityReady) mainActivityReady = true
             }
         }
     }
