@@ -64,7 +64,10 @@ fun NavGraph(
                     defaultValue = -1
                 }
             ),
-            deepLinks = listOf(navDeepLink { mimeType = "text/markdown" })
+            deepLinks = listOf(
+                navDeepLink { mimeType = "text/markdown" },
+                navDeepLink { mimeType = "text/plain" },
+            )
         ) {
             val id = it.arguments?.getInt("dataId")!!
             val writeViewModel = hiltViewModel<WriteViewModel>().apply {

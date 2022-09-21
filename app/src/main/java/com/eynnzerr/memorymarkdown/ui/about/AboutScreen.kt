@@ -115,7 +115,7 @@ fun AboutScreen(
                 title = stringResource(id = R.string.about_author),
                 description = stringResource(id = R.string.author_name)
             ) {
-                startBrowser("eynnzerr.life", context)
+                startBrowser("http://eynnzerr.top", context)
             }
             AboutItem(
                 painter = painterResource(id = R.drawable.github),

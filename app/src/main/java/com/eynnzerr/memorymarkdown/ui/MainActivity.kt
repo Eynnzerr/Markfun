@@ -22,6 +22,8 @@ import com.eynnzerr.memorymarkdown.utils.UriUtils
 import com.tencent.mmkv.MMKV
 import dagger.hilt.android.AndroidEntryPoint
 
+// For app performance's concern, though it's thread-unsafe,
+// we do not constraint it as synchronized.
 var mainActivityReady = false
 
 @ExperimentalFoundationApi

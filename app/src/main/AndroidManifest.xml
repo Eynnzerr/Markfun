@@ -32,6 +32,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/markdown" />
+                <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
     </application>

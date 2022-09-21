@@ -9,7 +9,7 @@
     <string name="drawer_starred">Starred</string>
     <string name="drawer_archived">Archived</string>
     <string name="delete_hint">Do you wish to archive this file? It will be moved to archived files.</string>
-    <string name="delete_permanently">Do you wish to archive this file permanently?</string>
+    <string name="delete_permanently">Do you wish to archive this file permanently or restore it?</string>
     <string name="title_created">Created</string>
     <string name="title_viewed">Viewed</string>
     <string name="menu_title_ascend">Title Alphabet (ascending)</string>
@@ -55,7 +55,7 @@
     <string name="about_version">Version</string>
     <string name="version_hint">Already the latest version.</string>
     <string name="about_author">Author</string>
-    <string name="author_name">Eynnzerr(blog: eynnzerr.life)</string>
+    <string name="author_name">Eynnzerr(blog: eynnzerr.top)</string>
     <string name="about_github">Github</string>
     <string name="github_url">https://github.com/Eynnzerr/MemoryMarkdown</string>
     <string name="about_libraries">Libraries</string>
