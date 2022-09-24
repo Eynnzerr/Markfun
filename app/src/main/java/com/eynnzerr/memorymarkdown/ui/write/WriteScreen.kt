@@ -1,9 +1,7 @@
 package com.eynnzerr.memorymarkdown.ui.write
 
 import android.annotation.SuppressLint
-import android.content.ContentUris
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import android.provider.DocumentsContract
 import android.provider.MediaStore
@@ -17,13 +15,10 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
-import androidx.compose.foundation.gestures.scrollable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -53,9 +48,7 @@ import com.eynnzerr.memorymarkdown.R
 import com.eynnzerr.memorymarkdown.utils.UriUtils
 import com.eynnzerr.memorymarkdown.navigation.Destinations
 import com.eynnzerr.memorymarkdown.navigation.navigateTo
-import com.eynnzerr.memorymarkdown.ui.write.markdown.MarkdownOption
-import com.eynnzerr.memorymarkdown.ui.write.markdown.addOption
-import com.eynnzerr.memorymarkdown.ui.write.markdown.optionList
+import com.eynnzerr.memorymarkdown.ui.write.markdown.*
 import io.noties.markwon.editor.MarkwonEditorTextWatcher
 import java.util.concurrent.Executors
 
@@ -88,7 +81,7 @@ fun WriteScreen(
     var isContentFocused by remember { mutableStateOf(false) }
     val keyboard = LocalSoftwareKeyboardController.current
     val context = LocalContext.current
-    val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
+    val textColor = MaterialTheme.colorScheme.onSurface
 
     // AndroidView softInput management
     val inputManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -101,26 +94,10 @@ fun WriteScreen(
         navController.navigateTo(Destinations.HOME_ROUTE)
     }
 
-    val selectPicture = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        // get file path from picture uri
-        it.data?.data?.let { uri ->
-            var imagePath = ""
-            if (DocumentsContract.isDocumentUri(context, uri)) {
-                val docId = DocumentsContract.getDocumentId(uri)
-                if (uri.authority == "com.android.providers.media.documents") {
-                    val id = docId.split(":")[1]
-                    val selection = MediaStore.Images.Media._ID + "=" + id
-                    imagePath = getImagePath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, selection, context)
-                }
-                else if (uri.authority == "com.android.providers.downloads.documents") {
-                    val contentUri = ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"), docId.toLong())
-                    imagePath = getImagePath(contentUri, null, context)
-                }
-            }
-            else if (uri.scheme == "content") imagePath = getImagePath(uri, null, context)
-            else if (uri.scheme == "file") imagePath = uri.path!!
-            Log.d(TAG, "WriteScreen: path is $imagePath")
-            viewModel.updateContent(uiState.content.plus("\n![$imageName]($imagePath)\n"))
+    val selectPicture = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        uri.let {
+            picUri = it.toString()
+            optionId = R.drawable.option_image // Trigger recomposition
         }
     }
 
@@ -139,7 +116,9 @@ fun WriteScreen(
             text = {
                 OutlinedTextField(
                     value = imageUrl,
-                    onValueChange = { imageUrl = it },
+                    onValueChange = {
+                        imageUrl = it
+                    },
                     label = {
                         Text(
                             text = stringResource(id = R.string.write_img_url_label),
@@ -160,8 +139,9 @@ fun WriteScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        viewModel.updateContent(uiState.content.plus("\n![$imageName]($imageUrl)\n"))
+                        picUri = imageUrl
                         insertFromUrl = false
+                        optionId = R.drawable.option_image // Trigger recomposition
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Transparent,
@@ -219,7 +199,9 @@ fun WriteScreen(
                     Text(text = stringResource(id = R.string.write_insert_image_title))
                     OutlinedTextField(
                         value = imageName,
-                        onValueChange = { imageName = it },
+                        onValueChange = {
+                            imageName = it
+                        },
                         label = {
                             Text(
                                 text = stringResource(id = R.string.write_img_name_label),
@@ -245,6 +227,7 @@ fun WriteScreen(
                             onClick = {
                                 insertImage = false
                                 insertFromUrl = true
+                                picName = imageName
                             },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Color.Transparent,
@@ -266,12 +249,9 @@ fun WriteScreen(
 
                         Button(
                             onClick = {
-                                  Toast.makeText(context, "This feature will be ready very soon!", Toast.LENGTH_SHORT).show()
-//                                val intent = Intent("android.intent.action.GET_CONTENT").apply {
-//                                    type = "image/*"
-//                                }
-//                                selectPicture.launch(intent)
-//                                insertImage = false
+                                insertImage = false
+                                picName = imageName
+                                selectPicture.launch("image/*")
                             },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Color.Transparent,
@@ -428,7 +408,9 @@ fun WriteScreen(
                     ) {
                         item {
                             IconButton(
-                                onClick = { insertImage = true },
+                                onClick = {
+                                    insertImage = true
+                                },
                             ) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.option_image),
@@ -502,7 +484,7 @@ fun WriteScreen(
                             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
                             gravity = Gravity.TOP.or(Gravity.START)
                             setTextSize(TypedValue.COMPLEX_UNIT_SP, 18.5f)
-                            setTextColor(textColor)
+                            setTextColor(textColor.toArgb())
                             markwon.setMarkdown(this, uiState.content)
                         }
                     },
@@ -520,16 +502,18 @@ fun WriteScreen(
                         EditText(context).apply {
                             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
                             gravity = Gravity.TOP.or(Gravity.START)
-                            setHintTextColor(textColor)
-                            setTextColor(textColor)
+                            setHintTextColor(textColor.copy(alpha=0.6f).toArgb())
+                            setTextColor(textColor.toArgb())
                             setText(uiState.content)
                             hint = "Enjoy your MarkDown now!"
                             background = null
+
                             addTextChangedListener(MarkwonEditorTextWatcher.withPreRender(
                                 editor,
                                 Executors.newCachedThreadPool(),
                                 this
                             ))
+
                             addTextChangedListener(object: TextWatcher {
                                 override fun beforeTextChanged(
                                     s: CharSequence?,
@@ -553,27 +537,35 @@ fun WriteScreen(
                                     Log.d(TAG, "afterTextChanged: content changed to ${viewModel.uiState.value.content}")
                                     contentChanged = true
                                 }
-
                             })
+
                             setOnFocusChangeListener { _, hasFocus -> isContentFocused = hasFocus }
+
+                            requestFocus()
                         }
                     },
                     modifier = Modifier
                         .padding(13.dp)
                         .verticalScroll(scrollState),
                     update = { editText ->
+                        // observe optionId
                         if (optionId != 0) {
                             val option = when (optionId) {
+                                R.drawable.option_image -> MarkdownOption.IMAGE
                                 R.drawable.option_header -> MarkdownOption.HEADER
                                 R.drawable.option_bold -> MarkdownOption.BOLD
                                 R.drawable.option_italic -> MarkdownOption.ITALIC
                                 R.drawable.option_delete_line -> MarkdownOption.STRIKETHROUGH
                                 R.drawable.option_code_inline -> MarkdownOption.CODEINLINE
                                 R.drawable.option_code_block -> MarkdownOption.CODEBLOCK
+                                R.drawable.option_ordered_list -> MarkdownOption.ORDEREDLIST
+                                R.drawable.option_unordered_list -> MarkdownOption.UNORDEREDLIST
                                 R.drawable.option_quote -> MarkdownOption.QUOTE
                                 R.drawable.option_divider -> MarkdownOption.DIVIDER
                                 R.drawable.option_hyperlink -> MarkdownOption.HYPERLINK
                                 R.drawable.option_task_list -> MarkdownOption.TASKLIST
+                                R.drawable.option_arrow_left -> MarkdownOption.LEFT
+                                R.drawable.option_arrow_right -> MarkdownOption.RIGHT
                                 else -> MarkdownOption.NONE
                             }
                             optionId = 0 // Consume option event to avoid dead loop: click -> update -> addOption -> textChanged -> updateContent -> update

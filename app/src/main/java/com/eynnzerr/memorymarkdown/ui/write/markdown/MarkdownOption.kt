@@ -1,9 +1,13 @@
 package com.eynnzerr.memorymarkdown.ui.write.markdown
 
+import android.util.Log
 import android.widget.EditText
 import com.eynnzerr.memorymarkdown.R
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 enum class MarkdownOption(val text: String) {
+    IMAGE(""),
     HEADER("#"),
     BOLD("**"),
     ITALIC("*"),
@@ -15,8 +19,10 @@ enum class MarkdownOption(val text: String) {
     HYPERLINK("()[]"),
     TASKLIST("\n- [ ] "),
     ORDEREDLIST(""),
-    UNORDEREDLIST(""),
+    UNORDEREDLIST("\n- "),
     TABLE(""),
+    LEFT(""),
+    RIGHT(""),
     NONE("")
 }
 
@@ -39,10 +45,31 @@ val optionList = listOf(
     R.drawable.option_undo
 )
 
+var picName = ""
+var picUri = ""
+
+private var currentOrder = 1  // TODO
+
 fun EditText.addOption(option: MarkdownOption) {
-    if (option != MarkdownOption.NONE) {
+    if (option == MarkdownOption.IMAGE) {
+        Log.d(TAG, "addOption: Picture name: $picName, Picture uri: $picUri")
+        text?.insert(selectionStart, "\n![$picName]($picUri)\n")
+    }
+    else if (option == MarkdownOption.LEFT) {
+        if (selectionStart > 0) setSelection(selectionStart - 1)
+    }
+    else if (option == MarkdownOption.RIGHT) {
+        if (selectionStart < text.length) setSelection(selectionStart + 1)
+    }
+    else if (option == MarkdownOption.ORDEREDLIST) {
+        val optionText = "\n${currentOrder++}. "
+        text?.insert(selectionStart, optionText)
+    }
+    else if (option != MarkdownOption.NONE) {
         text?.insert(selectionStart, option.text)
         // text?.insert(selectionEnd + option.text.length, option.text) 用户习惯：半符号或符号包裹
         // setSelection(selectionStart + option.text.length)
     }
 }
+
+private const val TAG = "MarkdownOption"

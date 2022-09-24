@@ -67,6 +67,7 @@ fun NavGraph(
             deepLinks = listOf(
                 navDeepLink { mimeType = "text/markdown" },
                 navDeepLink { mimeType = "text/plain" },
+                navDeepLink { mimeType = "text/html" },
             )
         ) {
             val id = it.arguments?.getInt("dataId")!!

@@ -14,6 +14,7 @@
         <entry key="app/src/main/res/drawable/markdown_line.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/markdown_logo.xml" value="0.1225" />
         <entry key="app/src/main/res/drawable/option_bold.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/option_undo.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/palette.xml" value="0.2235" />
         <entry key="app/src/main/res/drawable/setting_about.xml" value="0.2235" />
         <entry key="app/src/main/res/drawable/setting_palette.xml" value="0.2235" />
