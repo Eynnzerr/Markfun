@@ -1,9 +1,9 @@
 # MemoryMarkdown
-A simple mobile markdown reader/editor app made by Jetpack compose at leisure
+A simple mobile markdown reader/editor app made by Jetpack compose at leisure.
 ### Current Features
-- Basic markdown syntax support(including Latex formula & Html)
+- Basic markdown syntax support, **including Latex formula & Html**
 - Real-time preview of markdown editting
-- Open markdown file via deep link/SAF without further permission request
+- Open files(.md, .txt, .html) any time and any where via deep link/SAF without further permission request
 - Dynamic app theme color option with Material You palette
 ### ScreenShots
 <div align="center">
