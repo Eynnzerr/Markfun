@@ -21,7 +21,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.eynnzerr.memorymarkdown.R
 import com.eynnzerr.memorymarkdown.navigation.Destinations
-import com.eynnzerr.memorymarkdown.navigation.navigateTo
 import com.eynnzerr.memorymarkdown.navigation.navigateToSingle
 import com.eynnzerr.memorymarkdown.ui.home.HomeList
 import com.eynnzerr.memorymarkdown.utils.UriUtils
@@ -122,7 +121,8 @@ private fun NotFound() {
             text = stringResource(id = R.string.not_found),
             fontSize = 15.sp,
             textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.bodyMedium
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.primaryContainer
         )
     }
 }

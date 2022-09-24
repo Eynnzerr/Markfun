@@ -3,6 +3,8 @@ package com.eynnzerr.memorymarkdown.ui.write
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
+import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,6 +12,7 @@ import com.eynnzerr.memorymarkdown.base.CPApplication
 import com.eynnzerr.memorymarkdown.data.MMKVUtils
 import com.eynnzerr.memorymarkdown.data.PreferenceKeys
 import com.eynnzerr.memorymarkdown.data.database.MarkDownContent
+import com.eynnzerr.memorymarkdown.data.database.MarkDownUri
 import com.eynnzerr.memorymarkdown.data.database.MarkdownData
 import com.eynnzerr.memorymarkdown.data.database.MarkdownRepository
 import com.eynnzerr.memorymarkdown.ui.mainActivityReady
@@ -19,6 +22,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import javax.inject.Inject
 
@@ -28,6 +32,11 @@ data class WriteUiState(
     var isReadOnly: Boolean = true
 )
 
+/**
+ * WriteViewModel is responsible for:
+ * 1. managing data in [WriteScreen], i.e. title and content of current file
+ * 2. manipulating IO for room, MMKV and local files
+ */
 @HiltViewModel
 class WriteViewModel @Inject constructor(
     private val markdownAgent: MarkdownAgent,
@@ -106,15 +115,16 @@ class WriteViewModel @Inject constructor(
         // Must use main dispatcher to ensure that homeScreen collect data only after new data has been inserted.
         viewModelScope.launch {
             if (targetId != -1) {
-                // If from database, just modify the data content via primary key in database.
+                // If already from database, just modify the data content via primary key in database.
                 repository.updateContentById(MarkDownContent(
                     id = targetId,
                     title = _uiState.value.title,
-                    content = _uiState.value.content
+                    content = _uiState.value.content,
+                    modifiedDate = MarkdownData.currentTime()
                 ))
             }
             else {
-                // If from craft or uri, save the new markdown file into database.
+                // If from craft or uri(first enter), save the new markdown file into database.
                 repository.insertMarkdown(
                     MarkdownData(
                         title = _uiState.value.title,
@@ -156,10 +166,13 @@ class WriteViewModel @Inject constructor(
     fun stashFile() {
         // If automated backup is allowed by user, export markdown file to app external file directory.
         if (MMKVUtils.decodeBoolean(PreferenceKeys.AUTOMATED_BACKUP)) {
-            val basePath = CPApplication.context.getExternalFilesDir(null)?.absolutePath
+//            val basePath = CPApplication.context.getExternalFilesDir(null)?.absolutePath
+//            val fileName = if (_uiState.value.title == "") "new.md" else _uiState.value.title + ".md"
+//            val filePath = basePath + fileName
             val fileName = if (_uiState.value.title == "") "new.md" else _uiState.value.title + ".md"
-            val filePath = basePath + fileName
-            val mdFile = File(filePath).apply {
+            val mdDirectory = File(CPApplication.context.getExternalFilesDir(null), "my_files")
+            if (!mdDirectory.exists()) mdDirectory.mkdir()
+            val mdFile = File(mdDirectory, fileName).apply {
                 if (exists()) delete()
             }
             writeContent(mdFile)
@@ -174,9 +187,16 @@ class WriteViewModel @Inject constructor(
                 flush()
                 close()
             }
+            // update uri via targetId
+            if (targetId != -1) {
+                val contentUri = FileProvider.getUriForFile(CPApplication.context, "com.eynnzerr.memorymarkdown.file_provider", file)
+                repository.updateUriById(MarkDownUri(id = targetId, uri = contentUri))
+            }
         }
         Toast.makeText(CPApplication.context, "Stash ${file.name} to ${file.path}", Toast.LENGTH_SHORT).show()
     }
+
+    suspend fun getUri(): Uri? = repository.getDataById(targetId).first().uri
 
     fun getEditor() = markdownAgent.editor
 

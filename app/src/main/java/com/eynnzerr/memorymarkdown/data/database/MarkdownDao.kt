@@ -33,6 +33,9 @@ interface MarkdownDao {
     @Update(entity = MarkdownData::class)
     suspend fun updateContentById(markDownContent: MarkDownContent)
 
+    @Update(entity = MarkdownData::class)
+    suspend fun updateUriById(markDownUri: MarkDownUri)
+
     @Insert
     suspend fun insertMarkdown(vararg markdown: MarkdownData)
 

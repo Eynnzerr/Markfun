@@ -2,8 +2,8 @@ package com.eynnzerr.memorymarkdown.ui.write
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
-import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
@@ -15,6 +15,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -50,6 +51,9 @@ import com.eynnzerr.memorymarkdown.navigation.Destinations
 import com.eynnzerr.memorymarkdown.navigation.navigateTo
 import com.eynnzerr.memorymarkdown.ui.write.markdown.*
 import io.noties.markwon.editor.MarkwonEditorTextWatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.concurrent.Executors
 
 @ExperimentalAnimationApi
@@ -74,6 +78,7 @@ fun WriteScreen(
     var isDialogOpen by remember { mutableStateOf(false) }
 
     // Others
+    val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
     var optionId by remember { mutableStateOf(0) }
     var imageUrl by remember { mutableStateOf("") }
@@ -293,8 +298,10 @@ fun WriteScreen(
                         // saveCraft()
                         viewModel.saveCraft()
                         isDialogOpen = false
+
                         UriUtils.clearUri()
                         navController.popBackStack()
+
                         keyboard?.hide()
                     },
                     colors = ButtonDefaults.buttonColors(
@@ -321,8 +328,10 @@ fun WriteScreen(
                         // removeCraft()
                         viewModel.emptyCraft()
                         isDialogOpen = false
+
                         UriUtils.clearUri()
                         navController.popBackStack()
+
                         keyboard?.hide()
                     },
                     colors = ButtonDefaults.buttonColors(
@@ -363,11 +372,70 @@ fun WriteScreen(
                     }
                 },
                 actions = {
-                    AnimatedVisibility(visible = !uiState.isReadOnly) {
+                    if (uiState.isReadOnly) {
+                        IconButton(onClick = {
+                            // share
+                            if (viewModel.targetId == -1) {
+                                // already passed uri validation test
+                                if (!UriUtils.isUriValid) {
+                                    // craft
+                                    Toast.makeText(
+                                        context,
+                                        "Please fisrt store the file via saveAs or stash.",
+                                        Toast.LENGTH_SHORT).show()
+                                }
+                                else {
+                                    Log.d(TAG, "WriteScreen: Shared Uri: ${UriUtils.uri}")
+                                    // Some apps cannot recognize uri returned from uri. However this isn't my fault ;)
+                                    // e.g. content://com.android.providers.downloads.documents/document/442
+                                    val shareIntent = Intent().apply {
+                                        action = Intent.ACTION_SEND
+                                        putExtra(Intent.EXTRA_STREAM, UriUtils.uri)
+                                        type = "text/*"
+                                    }
+                                    shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION.or(Intent.FLAG_GRANT_WRITE_URI_PERMISSION))
+                                    context.startActivity(Intent.createChooser(shareIntent, "Share your thoughts!"))
+                                }
+                            }
+                            else {
+                                // find if uri exists.
+                                scope.launch {
+                                    val uri = withContext(Dispatchers.IO) {
+                                        viewModel.getUri()
+                                    }
+                                    if (uri == null) {
+                                        Toast.makeText(
+                                            context,
+                                            "Please fisrt store the file via saveAs or stash.",
+                                            Toast.LENGTH_SHORT).show()
+                                    }
+                                    else {
+                                        Log.d(TAG, "WriteScreen: Shared Uri: $uri")
+                                        // 这样提供的uri是file类型
+                                        // e.g. file:///storage/emulated/0/Android/data/com.eynnzerr.memorymarkdown/fileshi.md
+                                        val shareIntent = Intent().apply {
+                                            action = Intent.ACTION_SEND
+                                            putExtra(Intent.EXTRA_STREAM, uri)
+                                            type = "text/*"
+                                        }
+                                        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION.or(Intent.FLAG_GRANT_WRITE_URI_PERMISSION))
+                                        context.startActivity(Intent.createChooser(shareIntent, "Share your thoughts!"))
+                                    }
+                                }
+                            }
+                        }) {
+                            Icon(
+                                imageVector = Icons.Filled.Share,
+                                contentDescription = null
+                            )
+                        }
+                    }
+                    else {
                         Row {
                             IconButton(onClick = {
                                 // Save as
                                 saveFile.launch(viewModel.uiState.value.title + ".md")
+                                viewModel.saveMarkdown()
                             }) {
                                 Icon(
                                     imageVector = Icons.Filled.SaveAs,
@@ -378,7 +446,10 @@ fun WriteScreen(
                                 // Save/Stash to private folder
                                 viewModel.stashFile()
                                 viewModel.saveMarkdown()
+
                                 navController.popBackStack()
+                                UriUtils.clearUri()
+
                                 keyboard?.hide()
                                 inputManager.hideSoftInputFromWindow(windowToken, 0)
                             }) {
@@ -502,7 +573,7 @@ fun WriteScreen(
                         EditText(context).apply {
                             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
                             gravity = Gravity.TOP.or(Gravity.START)
-                            setHintTextColor(textColor.copy(alpha=0.6f).toArgb())
+                            setHintTextColor(textColor.copy(alpha=0.4f).toArgb())
                             setTextColor(textColor.toArgb())
                             setText(uiState.content)
                             hint = "Enjoy your MarkDown now!"

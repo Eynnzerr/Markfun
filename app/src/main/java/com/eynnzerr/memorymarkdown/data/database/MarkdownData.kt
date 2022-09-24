@@ -46,6 +46,8 @@ data class MarkdownData(
         const val STATUS_ARCHIVED = 2
         const val NOT_STARRED = 0
         const val IS_STARRED = 1
+
+        fun currentTime(): String = LocalDateTime.now().format(formatter)
     }
 
     override fun toString(): String {
@@ -53,8 +55,17 @@ data class MarkdownData(
     }
 }
 
+// Only used for updating file contents in database
 data class MarkDownContent(
     val id: Int,
     val title: String,
-    val content: String
+    val content: String,
+    val modifiedDate: String
+)
+
+// Only used for updating file uri in database
+@TypeConverters(UriConverter::class)
+data class MarkDownUri(
+    val id: Int,
+    val uri: Uri? = null
 )

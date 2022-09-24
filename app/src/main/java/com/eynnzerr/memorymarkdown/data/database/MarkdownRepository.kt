@@ -27,6 +27,7 @@ class MarkdownRepository @Inject constructor() {
     }
 
     suspend fun updateContentById(markDownContent: MarkDownContent) = dao.updateContentById(markDownContent)
+    suspend fun updateUriById(markDownUri: MarkDownUri) = dao.updateUriById(markDownUri)
 }
 
 private const val TAG = "MarkdownRepository"

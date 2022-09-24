@@ -1,6 +1,7 @@
 package com.eynnzerr.memorymarkdown.ui.home
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
@@ -77,6 +78,7 @@ fun HomeScreen(
                 uri = it
                 isUriValid = true
             }
+            Log.d(TAG, "HomeScreen: open file from uri: $it")
             navController.navigateTo(Destinations.WRITE_ROUTE + "/-1")
         }
     }
@@ -339,7 +341,7 @@ fun HomeScreen(
                             }
                             FloatingActionButton(
                                 onClick = {
-                                    launcher.launch(arrayOf("text/markdown"))
+                                    launcher.launch(arrayOf("text/markdown", "text/plain", "text/html"))
                                 },
                                 shape = CircleShape,
                                 modifier = Modifier.padding(end = 20.dp)
