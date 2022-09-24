@@ -193,7 +193,7 @@ class WriteViewModel @Inject constructor(
                 repository.updateUriById(MarkDownUri(id = targetId, uri = contentUri))
             }
         }
-        Toast.makeText(CPApplication.context, "Stash ${file.name} to ${file.path}", Toast.LENGTH_SHORT).show()
+        Toast.makeText(CPApplication.context, "Stash ${file.name} successfully", Toast.LENGTH_SHORT).show()
     }
 
     suspend fun getUri(): Uri? = repository.getDataById(targetId).first().uri

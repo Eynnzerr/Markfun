@@ -107,11 +107,13 @@ fun WriteScreen(
     }
 
     BackHandler {
-        if (contentChanged) isDialogOpen = true // 本地新建文件且内容改变时才提示是否保存草稿
-        else {
-            UriUtils.clearUri()
-            navController.popBackStack()
-        }
+        // Save markdown to database anyway since loading markdown from SAF/DeepLink.
+        if (UriUtils.isUriValid && viewModel.targetId == -1)
+            viewModel.saveMarkdown()
+        UriUtils.clearUri()
+
+        if (contentChanged) isDialogOpen = true
+        else navController.popBackStack()
     }
 
     if (insertFromUrl) {
@@ -362,8 +364,14 @@ fun WriteScreen(
                 title = {},
                 navigationIcon = {
                     IconButton(onClick = {
+                        // Save markdown to database anyway since loading markdown from SAF/DeepLink.
+                        if (UriUtils.isUriValid && viewModel.targetId == -1)
+                            viewModel.saveMarkdown()
+                        UriUtils.clearUri()
+
                         if (contentChanged) isDialogOpen = true
                         else navController.popBackStack()
+
                     }) {
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,

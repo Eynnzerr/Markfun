@@ -3,6 +3,7 @@ package com.eynnzerr.memorymarkdown.ui.setting
 import androidx.lifecycle.ViewModel
 import com.eynnzerr.memorymarkdown.data.MMKVUtils
 import com.eynnzerr.memorymarkdown.data.PreferenceKeys
+import com.eynnzerr.memorymarkdown.ui.write.markdown.MarkdownAgent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +17,9 @@ data class SettingUiState(
 
 @HiltViewModel
 class SettingViewModel @Inject constructor(
+    markdownAgent: MarkdownAgent
 ): ViewModel() {
+    val markwon = markdownAgent.markwon
 
     private val _uiState = MutableStateFlow(SettingUiState())
     val uiState: StateFlow<SettingUiState> = _uiState

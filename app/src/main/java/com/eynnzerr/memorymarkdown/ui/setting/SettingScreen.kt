@@ -1,15 +1,20 @@
 package com.eynnzerr.memorymarkdown.ui.setting
 
+import android.widget.TextView
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavHostController
 import com.eynnzerr.memorymarkdown.R
 import com.eynnzerr.memorymarkdown.navigation.Destinations
@@ -26,6 +31,8 @@ fun SettingScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
+    val scrollState = rememberScrollState()
 
     // dialogs
     var openColorPicker by remember { mutableStateOf(false) }
@@ -65,8 +72,36 @@ fun SettingScreen(
     if (openHelpDialog) {
         AlertDialog(
             onDismissRequest = { openHelpDialog = false },
-            title = {},
-            confirmButton = {}
+            text = {
+                AndroidView(
+                    factory = { context ->
+                        TextView(context).apply {
+                            setTextColor(textColor)
+                            viewModel.markwon.setMarkdown(this, context.resources.getString(R.string.setting_help))
+                        }
+                    },
+                    modifier = Modifier.verticalScroll(scrollState)
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        openHelpDialog = false
+                    },
+                    elevation = null
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.CheckCircle,
+                        contentDescription = stringResource(id = R.string.setting_confirm),
+                        modifier = Modifier.size(ButtonDefaults.IconSize)
+                    )
+                    Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+                    Text(
+                        text = stringResource(id = R.string.setting_confirm),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            },
         )
     }
 

@@ -1,5 +1,6 @@
 package com.eynnzerr.memorymarkdown.ui.home
 
+import android.text.TextUtils
 import android.widget.TextView
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -110,6 +111,7 @@ fun HomeListItem(
                     TextView(context).apply {
                         maxLines = 6
                         setTextColor(textColor)
+                        ellipsize = TextUtils.TruncateAt.MIDDLE
                         markwon.setMarkdown(this, data.content)
                     }
                 },

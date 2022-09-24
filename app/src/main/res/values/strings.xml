@@ -45,6 +45,24 @@
     <string name="setting_advanced">Advanced</string>
     <string name="setting_save">Save Backup</string>
     <string name="setting_about">About</string>
+    <string name="setting_help">
+        ### Category in drawer \n
+        - **Recently Created** stores internal files you created via this app. \n\n
+        - **Recently Viewed** stores external files you imported from other apps. \n\n
+        - **Starred** stores those files you have starred as important. \n\n
+        - **Archived** temporally stores files you have removed. \n
+        ### Appearance \n
+        Allows you to set app color and markdown text theme according to your favour. \n
+        ### Advanced \n
+        Allows you to configure advanced options. \n
+        - **Save Backup** will automatically save a copy of the text in private directory of
+        app if enabled. You will need this if you do not hope to choose a directory
+        on your own and you want to export your text or share it with others. \n\n
+        **Warning:** Backup will be lost if the app is uninstalled. \n
+        ### About \n
+        Basic introductions about this app and the author. \n
+
+    </string>
 
     <!--  SearchScreen.kt  -->
     <string name="search_text">Search</string>
