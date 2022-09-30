@@ -1,10 +1,20 @@
-# MemoryMarkdown
+# Markfun(MemoryMarkdown)
 A simple mobile markdown reader/editor app made by Jetpack compose at leisure.
+
+### Highlights
+- Jetpack Compose
+- Material3
+- MVVM
+- Hilt
+- kotlin Coroutine
+- Flow
+
 ### Current Features
 - Basic markdown syntax support, **including Latex formula & Html**
 - Real-time preview of markdown editting
 - Open files(.md, .txt, .html) any time and any where via deep link/SAF without further permission request
 - Dynamic app theme color option with Material You palette
+
 ### ScreenShots
 <div align="center">
   <img src="https://s2.loli.net/2022/08/07/6BKjcMsUHFPEnSX.jpg" width="256"/><img src="https://s2.loli.net/2022/08/07/bsfS85NX1RgMD2r.jpg" width="256"/><img src="https://s2.loli.net/2022/08/07/RxNumY4vsOtZwVK.jpg" width="256"/>
