@@ -383,53 +383,75 @@ fun WriteScreen(
                     if (uiState.isReadOnly) {
                         IconButton(onClick = {
                             // share
-                            if (viewModel.targetId == -1) {
-                                // already passed uri validation test
-                                if (!UriUtils.isUriValid) {
-                                    // craft
-                                    Toast.makeText(
-                                        context,
-                                        "Please fisrt store the file via saveAs or stash.",
-                                        Toast.LENGTH_SHORT).show()
-                                }
-                                else {
-                                    Log.d(TAG, "WriteScreen: Shared Uri: ${UriUtils.uri}")
-                                    // Some apps cannot recognize uri returned from uri. However this isn't my fault ;)
-                                    // e.g. content://com.android.providers.downloads.documents/document/442
-                                    val shareIntent = Intent().apply {
-                                        action = Intent.ACTION_SEND
-                                        putExtra(Intent.EXTRA_STREAM, UriUtils.uri)
-                                        type = "text/*"
-                                    }
-                                    shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION.or(Intent.FLAG_GRANT_WRITE_URI_PERMISSION))
-                                    context.startActivity(Intent.createChooser(shareIntent, "Share your thoughts!"))
-                                }
+//                            if (viewModel.targetId == -1) {
+//                                // already passed uri validation test
+//                                if (!UriUtils.isUriValid) {
+//                                    // craft
+//                                    Toast.makeText(
+//                                        context,
+//                                        "Please fisrt store the file via saveAs or stash.",
+//                                        Toast.LENGTH_SHORT).show()
+//                                }
+//                                else {
+//                                    Log.d(TAG, "WriteScreen: Shared Uri: ${UriUtils.uri}")
+//                                    // Some apps cannot recognize uri returned from uri. However this isn't my fault ;)
+//                                    // e.g. content://com.android.providers.downloads.documents/document/442
+//                                    val shareIntent = Intent().apply {
+//                                        action = Intent.ACTION_SEND
+//                                        putExtra(Intent.EXTRA_STREAM, UriUtils.uri)
+//                                        type = "text/*"
+//                                    }
+//                                    shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION.or(Intent.FLAG_GRANT_WRITE_URI_PERMISSION))
+//                                    context.startActivity(Intent.createChooser(shareIntent, "Share your thoughts!"))
+//                                }
+//                            }
+//                            else {
+//                                // find if uri exists.
+//                                scope.launch {
+//                                    val uri = withContext(Dispatchers.IO) {
+//                                        viewModel.getUri()
+//                                    }
+//                                    if (uri == null) {
+//                                        Toast.makeText(
+//                                            context,
+//                                            "Please fisrt store the file via saveAs or stash.",
+//                                            Toast.LENGTH_SHORT).show()
+//                                    }
+//                                    else {
+//                                        Log.d(TAG, "WriteScreen: Shared Uri: $uri")
+//                                        // 这样提供的uri是file类型
+//                                        // e.g. file:///storage/emulated/0/Android/data/com.eynnzerr.memorymarkdown/fileshi.md
+//                                        val shareIntent = Intent().apply {
+//                                            action = Intent.ACTION_SEND
+//                                            putExtra(Intent.EXTRA_STREAM, uri)
+//                                            type = "text/*"
+//                                        }
+//                                        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION.or(Intent.FLAG_GRANT_WRITE_URI_PERMISSION))
+//                                        context.startActivity(Intent.createChooser(shareIntent, "Share your thoughts!"))
+//                                    }
+//                                }
+//                            }
+
+                            // new version of sharing: Able to avoid saving before sharing.
+                            val uri = viewModel.cacheFile()
+                            if (uri == null) {
+                                Toast.makeText(
+                                    context,
+                                    "Error. Cannot share this file.",
+                                    Toast.LENGTH_SHORT).show()
                             }
                             else {
-                                // find if uri exists.
-                                scope.launch {
-                                    val uri = withContext(Dispatchers.IO) {
-                                        viewModel.getUri()
-                                    }
-                                    if (uri == null) {
-                                        Toast.makeText(
-                                            context,
-                                            "Please fisrt store the file via saveAs or stash.",
-                                            Toast.LENGTH_SHORT).show()
-                                    }
-                                    else {
-                                        Log.d(TAG, "WriteScreen: Shared Uri: $uri")
-                                        // 这样提供的uri是file类型
-                                        // e.g. file:///storage/emulated/0/Android/data/com.eynnzerr.memorymarkdown/fileshi.md
-                                        val shareIntent = Intent().apply {
-                                            action = Intent.ACTION_SEND
-                                            putExtra(Intent.EXTRA_STREAM, uri)
-                                            type = "text/*"
-                                        }
-                                        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION.or(Intent.FLAG_GRANT_WRITE_URI_PERMISSION))
-                                        context.startActivity(Intent.createChooser(shareIntent, "Share your thoughts!"))
-                                    }
+                                Log.d(TAG, "WriteScreen: Shared Uri: $uri")
+                                // 这样提供的uri是file类型
+                                // e.g. file:///storage/emulated/0/Android/data/com.eynnzerr.memorymarkdown/fileshi.md
+                                val shareIntent = Intent().apply {
+                                    action = Intent.ACTION_SEND
+                                    putExtra(Intent.EXTRA_STREAM, uri)
+                                    type = "text/*"
                                 }
+                                shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION.or(Intent.FLAG_GRANT_WRITE_URI_PERMISSION))
+                                context.startActivity(Intent.createChooser(shareIntent, "Share your thoughts!"))
+
                             }
                         }) {
                             Icon(

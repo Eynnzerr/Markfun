@@ -83,7 +83,7 @@ fun HomeScreen(
                 isUriValid = true
             }
             Log.d(TAG, "HomeScreen: open file from uri: $it")
-            navController.navigateTo(Destinations.WRITE_ROUTE + "/-1/${MarkdownData.STATUS_EXTERNAL}")
+            navController.navigateTo(Destinations.WRITE_ROUTE + "/-1")
         }
     }
 
@@ -407,7 +407,7 @@ fun HomeScreen(
                                 )
                             }
                             FloatingActionButton(
-                                onClick = { navController.navigateTo(Destinations.WRITE_ROUTE + "/-1/${MarkdownData.STATUS_INTERNAL}") },
+                                onClick = { navController.navigateTo(Destinations.WRITE_ROUTE + "/-1") },
                                 shape = CircleShape,
                                 modifier = Modifier.padding(end = 20.dp)
                             ) {
@@ -473,7 +473,7 @@ fun HomeScreen(
                         data.uri?.let { uri ->
                             UriUtils.prepareUri(uri)
                         }
-                        navController.navigateTo(Destinations.WRITE_ROUTE + "/${data.id}/${data.status}")
+                        navController.navigateTo(Destinations.WRITE_ROUTE + "/${data.id}")
                     },
                     onLongPressItem = {
                         viewModel.tempData = it

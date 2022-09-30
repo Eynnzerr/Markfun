@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">MemoryMarkdown</string>
+    <string name="app_name">Markfun</string>
 
     <!--  HomeScreen.kt  -->
     <string name="home_hint">Choose file to read \n or write by yourself!</string>

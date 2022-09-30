@@ -1,10 +1,10 @@
 package com.eynnzerr.memorymarkdown.ui.write
 
+import android.annotation.SuppressLint
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.core.content.FileProvider
-import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -22,7 +22,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.File
 import javax.inject.Inject
 
@@ -61,6 +60,7 @@ class WriteViewModel @Inject constructor(
     fun updateMode() = _uiState.update { it.copy(isReadOnly = !it.isReadOnly) }
 
     // load content from uri, set readOnly mode
+    @SuppressLint("Recycle")
     fun loadMarkdown(uri: Uri?) {
         targetId = -1
         uri?.let {
@@ -149,6 +149,7 @@ class WriteViewModel @Inject constructor(
         _uiState.update { WriteUiState() }
     }
 
+    @SuppressLint("Recycle")
     fun saveFileAs(uri: Uri) {
         val content = _uiState.value.content // shallow copy
         viewModelScope.launch(Dispatchers.IO) {
@@ -163,35 +164,52 @@ class WriteViewModel @Inject constructor(
         Toast.makeText(CPApplication.context, "Successfully saved.", Toast.LENGTH_SHORT).show()
     }
 
+    // If automated backup is allowed by user, export markdown file to app external file directory.
     fun stashFile() {
-        // If automated backup is allowed by user, export markdown file to app external file directory.
         if (MMKVUtils.decodeBoolean(PreferenceKeys.AUTOMATED_BACKUP)) {
-//            val basePath = CPApplication.context.getExternalFilesDir(null)?.absolutePath
-//            val fileName = if (_uiState.value.title == "") "new.md" else _uiState.value.title + ".md"
-//            val filePath = basePath + fileName
             val fileName = if (_uiState.value.title == "") "new.md" else _uiState.value.title + ".md"
             val mdDirectory = File(CPApplication.context.getExternalFilesDir(null), "my_files")
             if (!mdDirectory.exists()) mdDirectory.mkdir()
             val mdFile = File(mdDirectory, fileName).apply {
                 if (exists()) delete()
             }
-            writeContent(mdFile)
+            // update uri via targetId
+            viewModelScope.launch(Dispatchers.IO) {
+                // For external files this will overwrite their original uri
+                val contentUri = FileProvider.getUriForFile(CPApplication.context, "com.eynnzerr.memorymarkdown.file_provider", mdFile)
+                repository.updateUriById(MarkDownUri(id = targetId, uri = contentUri))
+                writeContent(mdFile)
+            }
         }
     }
 
+    // Create temporal file in cache directory to share the file with external apps
+    fun cacheFile(): Uri? {
+        // Create file
+        val fileName = if (_uiState.value.title == "") "new.md" else _uiState.value.title + ".md"
+        val mdDirectory = File(CPApplication.context.cacheDir, "cache_files")
+        if (!mdDirectory.exists()) mdDirectory.mkdir()
+        val cachedFile = File(mdDirectory, fileName).apply {
+            if (exists()) delete()
+        }
+
+        // Write file content
+        writeContent(cachedFile)
+
+        return FileProvider.getUriForFile(
+            CPApplication.context,
+            "com.eynnzerr.memorymarkdown.file_provider",
+            cachedFile
+        )
+    }
+
+    // IO method which should only run in coroutines
     private fun writeContent(file: File) {
-        viewModelScope.launch(Dispatchers.IO) {
-            Log.d(TAG, "writeContent: Save ${file.name} to ${file.path}")
-            with(file.writer()) {
-                write(_uiState.value.content)
-                flush()
-                close()
-            }
-            // update uri via targetId
-            if (targetId != -1) {
-                val contentUri = FileProvider.getUriForFile(CPApplication.context, "com.eynnzerr.memorymarkdown.file_provider", file)
-                repository.updateUriById(MarkDownUri(id = targetId, uri = contentUri))
-            }
+        Log.d(TAG, "writeContent: Save ${file.name} to ${file.path}")
+        with(file.writer()) {
+            write(_uiState.value.content)
+            flush()
+            close()
         }
         Toast.makeText(CPApplication.context, "Stash ${file.name} successfully", Toast.LENGTH_SHORT).show()
     }
