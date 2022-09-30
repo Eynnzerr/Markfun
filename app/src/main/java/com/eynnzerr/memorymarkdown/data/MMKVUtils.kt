@@ -10,6 +10,7 @@ object PreferenceKeys {
     const val CRAFT_TITLE = "craft_title"
     const val CRAFT_CONTENTS = "craft_contents"
     const val AUTOMATED_BACKUP = "preference_backup"
+    const val ABBREVIATION = "preference_abbreviation"
     const val APP_THEME_COLOR = "app_theme"
     const val APP_THEME_INDEX = "app_theme_index"
     const val MD_THEME_COLOR = "md_theme"
@@ -55,7 +56,7 @@ object MMKVUtils {
 
     // boolean
     fun encodeBoolean(key: String, value: Boolean) = mv.encode(key, value)
-    fun decodeBoolean(key: String) = mv.decodeBool(key)
+    fun decodeBoolean(key: String) = mv.decodeBool(key, false)
 
     // value
     fun encodeString(key: String, value: String) = mv.encode(key, value)

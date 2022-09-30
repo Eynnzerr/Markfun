@@ -12,6 +12,7 @@ import javax.inject.Inject
 
 data class SettingUiState(
     val isAutomaticallySaveEnabled: Boolean = true,
+    val isAbbreviationEnabled: Boolean = true,
     val initColorIndex: Int = 0
 )
 
@@ -28,6 +29,7 @@ class SettingViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 isAutomaticallySaveEnabled = MMKVUtils.decodeBoolean(PreferenceKeys.AUTOMATED_BACKUP),
+                isAbbreviationEnabled = MMKVUtils.decodeBoolean(PreferenceKeys.ABBREVIATION),
                 initColorIndex = MMKVUtils.decodeInt(PreferenceKeys.APP_THEME_INDEX, 0)
             )
         }
@@ -38,6 +40,15 @@ class SettingViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 isAutomaticallySaveEnabled = selection
+            )
+        }
+    }
+
+    fun updateAbbreviationPreference(selection: Boolean) {
+        MMKVUtils.encodeBoolean(PreferenceKeys.ABBREVIATION, selection)
+        _uiState.update {
+            it.copy(
+                isAbbreviationEnabled = selection
             )
         }
     }

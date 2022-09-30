@@ -44,6 +44,7 @@
     <string name="setting_cancel">Cancel</string>
     <string name="setting_advanced">Advanced</string>
     <string name="setting_save">Save Backup</string>
+    <string name="setting_abbreviation">Show Content</string>
     <string name="setting_about">About</string>
     <string name="setting_help">
         ### Category in drawer \n
@@ -59,6 +60,8 @@
         app if enabled. You will need this if you do not hope to choose a directory
         on your own and you want to export your text or share it with others. \n\n
         **Warning:** Backup will be lost if the app is uninstalled. \n
+        - **Show Content** will display the first several lines of the content of the texts
+        in list items if enabled. \n
         ### About \n
         Basic introductions about this app and the author. \n
 

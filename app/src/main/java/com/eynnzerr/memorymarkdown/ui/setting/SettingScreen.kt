@@ -144,7 +144,7 @@ fun SettingScreen(
             配色 select TODO
             是否自动导出 switch done.
             高级用户偏好设置 navigate TODO
-            关于 navigate TODO
+            关于 navigate
              */
             Spacer(modifier = Modifier.padding(vertical = 24.dp))
             SettingGroup(
@@ -176,6 +176,13 @@ fun SettingScreen(
                     checked = uiState.isAutomaticallySaveEnabled
                 ) { enabled ->
                     viewModel.updateBackupPreference(enabled)
+                }
+                SettingSwitch(
+                    imageVector = Icons.Filled.Visibility,
+                    title = stringResource(id = R.string.setting_abbreviation),
+                    checked = uiState.isAbbreviationEnabled,
+                ) { enabled ->
+                    viewModel.updateAbbreviationPreference(enabled)
                 }
             }
             SettingItem(

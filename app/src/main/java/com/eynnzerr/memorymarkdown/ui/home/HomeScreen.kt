@@ -57,9 +57,13 @@ fun HomeScreen(
     val gridState = rememberLazyGridState()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    
+    // Triggers for opening windows
     var selectionExpanded by remember { mutableStateOf(false) }
+    var bottomSheetExpanded by remember { mutableStateOf(false) }
     var openDeleteDialog by remember { mutableStateOf(false) }
     var openOrderMenu by remember { mutableStateOf(false) }
+    var openPageSelection by remember { mutableStateOf(false) }
 
     var animalBoolean by remember { mutableStateOf(true) }
     val animalBooleanState: Float by animateFloatAsState(
@@ -79,7 +83,7 @@ fun HomeScreen(
                 isUriValid = true
             }
             Log.d(TAG, "HomeScreen: open file from uri: $it")
-            navController.navigateTo(Destinations.WRITE_ROUTE + "/-1")
+            navController.navigateTo(Destinations.WRITE_ROUTE + "/-1/${MarkdownData.STATUS_EXTERNAL}")
         }
     }
 
@@ -237,7 +241,58 @@ fun HomeScreen(
                 ) {
                     SmallTopAppBar(
                         modifier = Modifier.statusBarsPadding(),
-                        title = { HomeBarTitle(type = uiState.homeType) },
+                        title = {
+                            // HomeBarTitle(type = uiState.homeType)
+                            Box {
+                                AssistChip(
+                                    onClick = { openPageSelection = true },
+                                    label = { HomeBarTitle(type = uiState.homeType) },
+                                    trailingIcon = {
+                                        Icon(
+                                            imageVector = if (openPageSelection) Icons.Filled.ArrowDropDown else Icons.Filled.ArrowLeft,
+                                            contentDescription = null,
+                                            // modifier = Modifier.size(AssistChipDefaults.IconSize)
+                                        )
+                                    },
+                                    modifier = Modifier.padding(start = 10.dp),
+                                    border = AssistChipDefaults.assistChipBorder(borderWidth = 2.dp)
+                                )
+                                
+                                DropdownMenu(
+                                    expanded = openPageSelection, 
+                                    onDismissRequest = { openPageSelection = false }
+                                ) {
+                                    PageMenuItem(
+                                        title = stringResource(id = R.string.drawer_created),
+                                        selected = uiState.homeType == HomeType.CREATED
+                                    ) {
+                                        viewModel.switchType(HomeType.CREATED)
+                                        openPageSelection = false
+                                    }
+                                    PageMenuItem(
+                                        title = stringResource(id = R.string.drawer_viewed),
+                                        selected = uiState.homeType == HomeType.VIEWED
+                                    ) {
+                                        viewModel.switchType(HomeType.VIEWED)
+                                        openPageSelection = false
+                                    }
+                                    PageMenuItem(
+                                        title = stringResource(id = R.string.drawer_starred),
+                                        selected = uiState.homeType == HomeType.STARRED
+                                    ) {
+                                        viewModel.switchType(HomeType.STARRED)
+                                        openPageSelection = false
+                                    }
+                                    PageMenuItem(
+                                        title = stringResource(id = R.string.drawer_archived),
+                                        selected = uiState.homeType == HomeType.ARCHIVED
+                                    ) {
+                                        viewModel.switchType(HomeType.ARCHIVED)
+                                        openPageSelection = false
+                                    }
+                                }
+                            }
+                        },
                         navigationIcon = {
                             IconButton(onClick = {
                                 scope.launch {
@@ -261,39 +316,39 @@ fun HomeScreen(
                                 DropdownMenu(
                                     expanded = openOrderMenu,
                                     onDismissRequest = { openOrderMenu = false }) {
-                                    MenuItem(
+                                    OrderMenuItem(
                                         title = stringResource(id = R.string.menu_title_ascend),
                                         selected = uiState.listOrder == ListOrder.TITLE_ASCEND
                                     ) {
                                         viewModel.updateDisplayOrder(ListOrder.TITLE_ASCEND)
                                         openOrderMenu = false
                                     }
-                                    MenuItem(
+                                    OrderMenuItem(
                                         title = stringResource(id = R.string.menu_title_descend),
                                         selected = uiState.listOrder == ListOrder.TITLE_DESCEND
                                     ) {
                                         viewModel.updateDisplayOrder(ListOrder.TITLE_DESCEND)
                                         openOrderMenu = false
                                     }
-                                    MenuItem(
+                                    OrderMenuItem(
                                         title = stringResource(id = R.string.menu_date_ascend),
                                         selected = uiState.listOrder == ListOrder.CREATED_DATE_ASCEND) {
                                         viewModel.updateDisplayOrder(ListOrder.CREATED_DATE_ASCEND)
                                         openOrderMenu = false
                                     }
-                                    MenuItem(
+                                    OrderMenuItem(
                                         title = stringResource(id = R.string.menu_date_descend),
                                         selected = uiState.listOrder == ListOrder.CREATED_DATE_DESCEND) {
                                         viewModel.updateDisplayOrder(ListOrder.CREATED_DATE_DESCEND)
                                         openOrderMenu = false
                                     }
-                                    MenuItem(
+                                    OrderMenuItem(
                                         title = stringResource(id = R.string.menu_modified_ascend),
                                         selected = uiState.listOrder == ListOrder.MODIFIED_DATE_ASCEND) {
                                         viewModel.updateDisplayOrder(ListOrder.MODIFIED_DATE_ASCEND)
                                         openOrderMenu = false
                                     }
-                                    MenuItem(
+                                    OrderMenuItem(
                                         title = stringResource(id = R.string.menu_modified_descend),
                                         selected = uiState.listOrder == ListOrder.MODIFIED_DATE_DESCEND) {
                                         viewModel.updateDisplayOrder(ListOrder.MODIFIED_DATE_DESCEND)
@@ -352,7 +407,7 @@ fun HomeScreen(
                                 )
                             }
                             FloatingActionButton(
-                                onClick = { navController.navigateTo(Destinations.WRITE_ROUTE + "/-1") },
+                                onClick = { navController.navigateTo(Destinations.WRITE_ROUTE + "/-1/${MarkdownData.STATUS_INTERNAL}") },
                                 shape = CircleShape,
                                 modifier = Modifier.padding(end = 20.dp)
                             ) {
@@ -378,6 +433,11 @@ fun HomeScreen(
                         )
                     }
                 }
+            },
+            bottomBar = {
+                AnimatedVisibility(visible = bottomSheetExpanded) {
+
+                }
             }
         ) { paddingValues ->
             // Display logo when data is empty
@@ -401,7 +461,7 @@ fun HomeScreen(
                         .navigationBarsPadding(),
                     displayMode = uiState.listDisplay,
                     dataList = presentList,
-                    markwon = viewModel.markwon,
+                    markwon = viewModel.getMarkwon(),
                     listState = listState,
                     gridState = gridState,
                     onStarredItem = { data ->
@@ -413,7 +473,7 @@ fun HomeScreen(
                         data.uri?.let { uri ->
                             UriUtils.prepareUri(uri)
                         }
-                        navController.navigateTo(Destinations.WRITE_ROUTE + "/${data.id}")
+                        navController.navigateTo(Destinations.WRITE_ROUTE + "/${data.id}/${data.status}")
                     },
                     onLongPressItem = {
                         viewModel.tempData = it
@@ -436,7 +496,7 @@ private fun HomeBarTitle(type: HomeType) {
     Text(
         text = title,
         style = MaterialTheme.typography.titleLarge,
-        modifier = Modifier.padding(horizontal = 12.dp)
+        // modifier = Modifier.padding(horizontal = 12.dp)
     )
 }
 
@@ -464,9 +524,35 @@ private fun Logo() {
     }
 }
 
+@Composable
+private fun PageMenuItem(title: String, selected: Boolean, onClick: () -> Unit) {
+    DropdownMenuItem(
+        text = {
+            /*Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.wrapContentHeight()
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .width(4.dp),
+                        // .padding(end = 4.dp),
+                    color = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent
+                ) {}
+
+            }*/
+            Text(
+                text = title,
+                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+            )
+        },
+        onClick = onClick
+    )
+}
+
 @ExperimentalMaterial3Api
 @Composable
-private fun MenuItem(title: String, selected: Boolean, onClick: () -> Unit) {
+private fun OrderMenuItem(title: String, selected: Boolean, onClick: () -> Unit) {
     DropdownMenuItem(
         text = {
             Row(

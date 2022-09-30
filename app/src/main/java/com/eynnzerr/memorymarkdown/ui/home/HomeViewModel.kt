@@ -35,7 +35,7 @@ enum class HomeType {
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val repository: MarkdownRepository,
-    markdownAgent: MarkdownAgent
+    private val markdownAgent: MarkdownAgent
 ): ViewModel() {
     private val _uiState = MutableStateFlow(
         HomeUiState(
@@ -46,8 +46,6 @@ class HomeViewModel @Inject constructor(
         )
     )
     val uiState = _uiState.asStateFlow()
-
-    val markwon = markdownAgent.markwon
 
     private var homeList = emptyList<MarkdownData>()
     lateinit var tempData: MarkdownData
@@ -67,6 +65,8 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
+
+    fun getMarkwon() = if (MMKVUtils.decodeBoolean(PreferenceKeys.ABBREVIATION)) markdownAgent.markwon else null
 
     fun switchType(type: HomeType) {
         if (_uiState.value.homeType != type) {

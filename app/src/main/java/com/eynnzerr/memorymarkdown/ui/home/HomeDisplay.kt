@@ -35,11 +35,12 @@ import com.eynnzerr.memorymarkdown.data.ListDisplayMode
 import com.eynnzerr.memorymarkdown.data.database.MarkdownData
 import io.noties.markwon.Markwon
 
+// If markwon is null, no brief content is shown.
 @Composable
 fun HomeListItem(
     modifier: Modifier = Modifier,
     data: MarkdownData,
-    markwon: Markwon,
+    markwon: Markwon?,
     onStarred: (MarkdownData) -> Unit,
     onClick: (MarkdownData) -> Unit,
     onLongPressed: (MarkdownData) -> Unit
@@ -106,19 +107,21 @@ fun HomeListItem(
                 overflow = TextOverflow.Ellipsis
             )
 
-            AndroidView(
-                factory = { context ->
-                    TextView(context).apply {
-                        maxLines = 6
-                        setTextColor(textColor)
-                        ellipsize = TextUtils.TruncateAt.MIDDLE
-                        markwon.setMarkdown(this, data.content)
-                    }
-                },
-                modifier = Modifier
-                    .padding(8.dp)
+            markwon?.let {
+                AndroidView(
+                    factory = { context ->
+                        TextView(context).apply {
+                            maxLines = 6
+                            setTextColor(textColor)
+                            ellipsize = TextUtils.TruncateAt.MIDDLE
+                            it.setMarkdown(this, data.content)
+                        }
+                    },
+                    modifier = Modifier
+                        .padding(8.dp)
                     // .clickable { onClick(data) }
-            )
+                )
+            }
         }
     }
 }
@@ -128,7 +131,7 @@ fun HomeListItem(
 fun HomeList(
     modifier: Modifier = Modifier,
     dataList: List<MarkdownData>,
-    markwon: Markwon,
+    markwon: Markwon?,
     listState: LazyListState = rememberLazyListState(),
     onStarredItem: (MarkdownData) -> Unit,
     onClickItem: (MarkdownData) -> Unit,
@@ -156,7 +159,7 @@ fun HomeList(
 fun HomeGrid(
     modifier: Modifier = Modifier,
     dataList: List<MarkdownData>,
-    markwon: Markwon,
+    markwon: Markwon?,
     gridState: LazyGridState = rememberLazyGridState(),
     onStarredItem: (MarkdownData) -> Unit,
     onClickItem: (MarkdownData) -> Unit,
@@ -188,7 +191,7 @@ fun HomeDisplay(
     modifier: Modifier = Modifier,
     displayMode: Int,
     dataList: List<MarkdownData>,
-    markwon: Markwon,
+    markwon: Markwon?,
     listState: LazyListState = rememberLazyListState(),
     gridState: LazyGridState = rememberLazyGridState(),
     onStarredItem: (MarkdownData) -> Unit,
