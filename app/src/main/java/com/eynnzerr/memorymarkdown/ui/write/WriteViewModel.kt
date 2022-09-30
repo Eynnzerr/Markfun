@@ -42,7 +42,9 @@ class WriteViewModel @Inject constructor(
     private val repository: MarkdownRepository
 ): ViewModel() {
 
-    var targetId: Int = -1
+    // Implies the id of file on editing.
+    // -2 means viewModel is not validly initialized, -1 means importing external file, others mean file in database.
+    var targetId: Int = -2
 
     private val _uiState = MutableStateFlow(
         WriteUiState(
@@ -62,39 +64,45 @@ class WriteViewModel @Inject constructor(
     // load content from uri, set readOnly mode
     @SuppressLint("Recycle")
     fun loadMarkdown(uri: Uri?) {
-        targetId = -1
-        uri?.let {
-            val title = DocumentFile.fromSingleUri(CPApplication.context, it)?.name?:""
-            viewModelScope.launch(Dispatchers.IO) {
-                val reader = CPApplication.context.contentResolver.openInputStream(it)?.reader()
-                val text = reader?.readText()?:""
+        if (targetId == -2) {
+            targetId = -1
+            uri?.let {
+                val title = DocumentFile.fromSingleUri(CPApplication.context, it)?.name?:""
+                viewModelScope.launch(Dispatchers.IO) {
+                    val reader = CPApplication.context.contentResolver.openInputStream(it)?.reader()
+                    val text = reader?.readText()?:""
 
-                _uiState.update { WriteUiState(title, text, true) }
+                    _uiState.update { WriteUiState(title, text, true) }
 
-                // Main activity not ready indicates app is cold launched.
-                if (!mainActivityReady) mainActivityReady = true
+                    // Main activity not ready indicates app is cold launched.
+                    if (!mainActivityReady) mainActivityReady = true
+                }
             }
         }
     }
 
     // load content from database, set readOnly mode
     fun loadMarkdown(id: Int) {
-        targetId = id
-        viewModelScope.launch(Dispatchers.IO) {
-            val data = repository.getDataById(id).first()
-            _uiState.update { WriteUiState(data.title, data.content, true) }
+        if (targetId == -2) {
+            targetId = id
+            viewModelScope.launch(Dispatchers.IO) {
+                val data = repository.getDataById(id).first()
+                _uiState.update { WriteUiState(data.title, data.content, true) }
+            }
         }
     }
 
     // load content from MMKV craft, set write mode
     fun loadCraft() {
-        targetId = -1
-        _uiState.update {
-            WriteUiState(
-                MMKVUtils.decodeString(PreferenceKeys.CRAFT_TITLE),
-                MMKVUtils.decodeString(PreferenceKeys.CRAFT_CONTENTS),
-                false
-            )
+        if (targetId == -2) {
+            targetId = -1
+            _uiState.update {
+                WriteUiState(
+                    MMKVUtils.decodeString(PreferenceKeys.CRAFT_TITLE),
+                    MMKVUtils.decodeString(PreferenceKeys.CRAFT_CONTENTS),
+                    false
+                )
+            }
         }
     }
 

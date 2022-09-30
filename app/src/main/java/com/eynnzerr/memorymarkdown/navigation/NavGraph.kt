@@ -78,6 +78,7 @@ fun NavGraph(
                 else if (UriUtils.isUriValid) loadMarkdown(UriUtils.uri)
                 // else indicates creating new file. Load via craft.
                 else loadCraft()
+                Log.d(TAG, "NavGraph: viewModel initialized.")
             }
             WriteScreen(
                 navController = navHostController,

@@ -71,6 +71,8 @@ fun WriteScreen(
     val markwon = viewModel.getMarkwon()
     val optionList = optionList
 
+    Log.d(TAG, "WriteScreen: uiState:${uiState.isReadOnly}, ${uiState.title}")
+
     // Dialogs
     var contentChanged by remember { mutableStateOf(false) }
     var insertImage by remember { mutableStateOf(false) }
