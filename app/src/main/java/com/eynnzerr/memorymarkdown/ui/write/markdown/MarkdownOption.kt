@@ -37,12 +37,12 @@ val optionList = listOf(
     R.drawable.option_divider,
     R.drawable.option_hyperlink,
     R.drawable.option_task_list,
-    R.drawable.option_ordered_list,
+    // R.drawable.option_ordered_list,
     R.drawable.option_unordered_list,
     R.drawable.option_table,
     R.drawable.option_arrow_left,
     R.drawable.option_arrow_right,
-    R.drawable.option_undo
+    // R.drawable.option_undo
 )
 
 var picName = ""
