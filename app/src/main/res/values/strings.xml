@@ -20,6 +20,11 @@
     <string name="menu_modified_descend">Modified Date (descending)</string>
     <string name="time_created">Created:</string>
     <string name="time_modified">Modified:</string>
+    <string name="home_bottom_open">Open</string>
+    <string name="home_bottom_star">Star/Unstar</string>
+    <string name="home_bottom_remove">Remove</string>
+    <string name="home_bottom_export">Export</string>
+    <string name="home_bottom_share">Share</string>
 
     <!--  WriteScreen.kt  -->
     <string name="write_title_holder">Title Here.</string>
@@ -43,6 +48,7 @@
     <string name="setting_confirm">Confirm</string>
     <string name="setting_cancel">Cancel</string>
     <string name="setting_advanced">Advanced</string>
+    <string name="setting_shortcuts">Shortcuts</string>
     <string name="setting_save">Save Backup</string>
     <string name="setting_abbreviation">Show Content</string>
     <string name="setting_about">About</string>

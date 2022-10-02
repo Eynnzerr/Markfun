@@ -32,6 +32,21 @@ object ListOrder {
     const val MODIFIED_DATE_DESCEND = 5
 }
 
+// TODO markdown syntax that provides diy shortcut
+enum class ShortCuts {
+    HEADER,
+    BOLD,
+    ITALIC,
+    STRIKETHROUGH,
+    CODEINLINE,
+    CODEBLOCK,
+    QUOTE,
+    DIVIDER,
+    HYPERLINK,
+    TASKLIST,
+    UNORDEREDLIST,
+}
+
 data class ThemeState(
     val appTheme: Int = DEFAULT_COLOR,
     val markdownTheme: Int = 0
@@ -58,7 +73,7 @@ object MMKVUtils {
     fun encodeBoolean(key: String, value: Boolean) = mv.encode(key, value)
     fun decodeBoolean(key: String) = mv.decodeBool(key, false)
 
-    // value
+    // String
     fun encodeString(key: String, value: String) = mv.encode(key, value)
     fun decodeString(key: String) = mv.decodeString(key) ?: ""
 

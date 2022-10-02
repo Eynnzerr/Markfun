@@ -2,13 +2,20 @@ package com.eynnzerr.memorymarkdown.ui.home
 
 import android.annotation.SuppressLint
 import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
@@ -18,6 +25,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,6 +33,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -52,6 +62,7 @@ fun HomeScreen(
     viewModel: HomeViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
 
     val listState = rememberLazyListState()
     val gridState = rememberLazyGridState()
@@ -159,6 +170,10 @@ fun HomeScreen(
         )
     }
 
+    BackHandler(bottomSheetExpanded) {
+        bottomSheetExpanded = false
+    }
+
     ModalNavigationDrawer(
         scrimColor = Color.Transparent.copy(alpha = 0.5f),
         drawerContainerColor = Color.Transparent,
@@ -264,28 +279,32 @@ fun HomeScreen(
                                 ) {
                                     PageMenuItem(
                                         title = stringResource(id = R.string.drawer_created),
-                                        selected = uiState.homeType == HomeType.CREATED
+                                        selected = uiState.homeType == HomeType.CREATED,
+                                        imageVector = Icons.Outlined.Source
                                     ) {
                                         viewModel.switchType(HomeType.CREATED)
                                         openPageSelection = false
                                     }
                                     PageMenuItem(
                                         title = stringResource(id = R.string.drawer_viewed),
-                                        selected = uiState.homeType == HomeType.VIEWED
+                                        selected = uiState.homeType == HomeType.VIEWED,
+                                        imageVector = Icons.Outlined.Visibility,
                                     ) {
                                         viewModel.switchType(HomeType.VIEWED)
                                         openPageSelection = false
                                     }
                                     PageMenuItem(
                                         title = stringResource(id = R.string.drawer_starred),
-                                        selected = uiState.homeType == HomeType.STARRED
+                                        selected = uiState.homeType == HomeType.STARRED,
+                                        imageVector = Icons.Outlined.StarBorder,
                                     ) {
                                         viewModel.switchType(HomeType.STARRED)
                                         openPageSelection = false
                                     }
                                     PageMenuItem(
                                         title = stringResource(id = R.string.drawer_archived),
-                                        selected = uiState.homeType == HomeType.ARCHIVED
+                                        selected = uiState.homeType == HomeType.ARCHIVED,
+                                        imageVector = Icons.Outlined.Delete,
                                     ) {
                                         viewModel.switchType(HomeType.ARCHIVED)
                                         openPageSelection = false
@@ -435,8 +454,88 @@ fun HomeScreen(
                 }
             },
             bottomBar = {
-                AnimatedVisibility(visible = bottomSheetExpanded) {
-
+                AnimatedVisibility(
+                    visible = bottomSheetExpanded,
+                    enter = fadeIn(animationSpec = spring(stiffness = Spring.StiffnessMedium)),
+                    exit = fadeOut(animationSpec = spring(stiffness = Spring.StiffnessMedium))
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .navigationBarsPadding(),
+                        contentAlignment = Alignment.BottomStart
+                    ) {
+                        Canvas(
+                            Modifier
+                                .fillMaxSize()
+                                .clickable(
+                                    indication = null,
+                                    interactionSource = remember {
+                                        MutableInteractionSource()
+                                    }
+                                ) { bottomSheetExpanded = false }
+                        ) {
+                            drawRect(Color.Black, alpha = 0.4f)
+                        }
+                        
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .fillMaxHeight(0.35f)
+                        ) {
+                            Surface(
+                                modifier = Modifier
+                                    .fillMaxSize(),
+                                shape = RoundedCornerShape(topEndPercent = 15, topStartPercent = 15)
+                            ) {
+                                Column(
+                                    modifier = Modifier.fillMaxSize(),
+                                    horizontalAlignment = Alignment.Start,
+                                    verticalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    // open，star/unstar，remove, share, export
+                                    BottomSheetItem(
+                                        imageVector = Icons.Outlined.Edit,
+                                        title = stringResource(R.string.home_bottom_open)
+                                    ) {
+                                        viewModel.tempData.uri?.let { uri ->
+                                            UriUtils.prepareUri(uri)
+                                        }
+                                        navController.navigateTo(Destinations.WRITE_ROUTE + "/${viewModel.tempData.id}")
+                                        bottomSheetExpanded = false
+                                    }
+                                    BottomSheetItem(
+                                        imageVector = Icons.Outlined.StarBorder,
+                                        title = stringResource(id = R.string.home_bottom_star)
+                                    ) {
+                                        viewModel.updateMarkdown(
+                                            viewModel.tempData.copy(isStarred = (viewModel.tempData.isStarred-1).absoluteValue)
+                                        )
+                                        bottomSheetExpanded = false
+                                    }
+                                    BottomSheetItem(
+                                        imageVector = Icons.Outlined.Delete,
+                                        title = stringResource(id = R.string.home_bottom_remove)
+                                    ) {
+                                        bottomSheetExpanded = false
+                                        openDeleteDialog = true
+                                    }
+                                    BottomSheetItem(
+                                        imageVector = Icons.Outlined.Share,
+                                        title = stringResource(id = R.string.home_bottom_share)
+                                    ) {
+                                        Toast.makeText(context, "Open file in read mode to share.", Toast.LENGTH_SHORT).show()
+                                    }
+                                    BottomSheetItem(
+                                        imageVector = Icons.Outlined.SaveAs,
+                                        title = stringResource(id = R.string.home_bottom_export)
+                                    ) {
+                                        Toast.makeText(context, "Open file in write mode to export.", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         ) { paddingValues ->
@@ -476,8 +575,9 @@ fun HomeScreen(
                         navController.navigateTo(Destinations.WRITE_ROUTE + "/${data.id}")
                     },
                     onLongPressItem = {
-                        viewModel.tempData = it
-                        openDeleteDialog = true
+                        viewModel.tempData = it  //  mark the data that is being operating
+                        // openDeleteDialog = true
+                        bottomSheetExpanded = true
                     }
                 )
             }
@@ -525,28 +625,29 @@ private fun Logo() {
 }
 
 @Composable
-private fun PageMenuItem(title: String, selected: Boolean, onClick: () -> Unit) {
+private fun PageMenuItem(
+    title: String,
+    selected: Boolean,
+    imageVector: ImageVector,
+    onClick: () -> Unit) {
+
+    val color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+
     DropdownMenuItem(
         text = {
-            /*Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.wrapContentHeight()
-            ) {
-                Surface(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .width(4.dp),
-                        // .padding(end = 4.dp),
-                    color = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent
-                ) {}
-
-            }*/
             Text(
                 text = title,
-                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                color = color
             )
         },
-        onClick = onClick
+        onClick = onClick,
+        leadingIcon = {
+            Icon(
+                imageVector = imageVector,
+                contentDescription = null,
+                tint = color
+            )
+        }
     )
 }
 

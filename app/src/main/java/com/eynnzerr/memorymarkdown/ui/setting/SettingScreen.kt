@@ -7,6 +7,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.Dashboard
+import androidx.compose.material.icons.outlined.Keyboard
+import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -167,9 +170,16 @@ fun SettingScreen(
                 }
             }
             SettingGroup(
-                imageVector = Icons.Filled.Dashboard,
+                imageVector = Icons.Outlined.Dashboard,
                 title = stringResource(id = R.string.setting_advanced)
             ) {
+                SettingItem(
+                    imageVector = Icons.Outlined.Keyboard,
+                    title = stringResource(id = R.string.setting_shortcuts)
+                ) {
+                    // DIY markdown shortcuts
+                    Toast.makeText(context, "This feature will be ready very soon.", Toast.LENGTH_SHORT).show()
+                }
                 SettingSwitch(
                     imageVector = Icons.Filled.Download, 
                     title = stringResource(id = R.string.setting_save),
@@ -178,7 +188,7 @@ fun SettingScreen(
                     viewModel.updateBackupPreference(enabled)
                 }
                 SettingSwitch(
-                    imageVector = Icons.Filled.Visibility,
+                    imageVector = Icons.Outlined.Visibility,
                     title = stringResource(id = R.string.setting_abbreviation),
                     checked = uiState.isAbbreviationEnabled,
                 ) { enabled ->
