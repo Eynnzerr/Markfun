@@ -98,32 +98,25 @@ fun HomeScreen(
         }
     }
 
+    // open only when deleting archived data
     if (openDeleteDialog) {
-        val hint = if (viewModel.tempData.status == MarkdownData.STATUS_ARCHIVED)
-                        stringResource(id = R.string.delete_permanently)
-                    else stringResource(id = R.string.delete_hint)
         AlertDialog(
             onDismissRequest = { openDeleteDialog = false },
             text = {
                 Text(
-                    text = hint,
+                    text = stringResource(id = R.string.delete_permanently),
                     style = MaterialTheme.typography.bodyLarge
                 )
             },
             confirmButton = {
                 Button(
                     onClick = {
-                        if (viewModel.tempData.status == MarkdownData.STATUS_ARCHIVED) {
-                            viewModel.deleteMarkdown(viewModel.tempData)
-                        }
-                        else {
-                            viewModel.updateMarkdown(
-                                viewModel.tempData.copy(
-                                    status = MarkdownData.STATUS_ARCHIVED,
-                                    isStarred = MarkdownData.NOT_STARRED
-                                )
+                        viewModel.updateMarkdown(
+                            viewModel.tempData.copy(
+                                status = MarkdownData.STATUS_ARCHIVED,
+                                isStarred = MarkdownData.NOT_STARRED
                             )
-                        }
+                        )
                         openDeleteDialog = false
                     },
                     colors = ButtonDefaults.buttonColors(
@@ -518,7 +511,12 @@ fun HomeScreen(
                                         title = stringResource(id = R.string.home_bottom_remove)
                                     ) {
                                         bottomSheetExpanded = false
-                                        openDeleteDialog = true
+                                        if (uiState.homeType == HomeType.ARCHIVED) {
+                                            openDeleteDialog = true
+                                        }
+                                        else {
+                                            viewModel.deleteMarkdown(viewModel.tempData)
+                                        }
                                     }
                                     BottomSheetItem(
                                         imageVector = Icons.Outlined.Share,

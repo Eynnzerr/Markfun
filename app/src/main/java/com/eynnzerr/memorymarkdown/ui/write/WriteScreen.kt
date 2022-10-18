@@ -7,10 +7,14 @@ import android.net.Uri
 import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
+import android.text.method.ScrollingMovementMethod
 import android.util.Log
 import android.util.TypedValue
 import android.view.Gravity
+import android.view.MotionEvent
+import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -20,6 +24,8 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
+import androidx.compose.foundation.gestures.animateScrollBy
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -54,8 +60,10 @@ import io.noties.markwon.editor.MarkwonEditorTextWatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import ru.noties.jlatexmath.swing.Icon
 import java.util.concurrent.Executors
 
+@SuppressLint("ClickableViewAccessibility")
 @ExperimentalAnimationApi
 @ExperimentalComposeUiApi
 @ExperimentalMaterial3Api
@@ -64,7 +72,7 @@ fun WriteScreen(
     navController: NavHostController,
     viewModel: WriteViewModel
 ) {
-    
+
     // viewModel
     val uiState by viewModel.uiState.collectAsState()
     val editor = viewModel.getEditor()
@@ -83,6 +91,7 @@ fun WriteScreen(
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
     var optionId by remember { mutableStateOf(0) }
+    var asPdf by remember { mutableStateOf(false) }
     var imageUrl by remember { mutableStateOf("") }
     var imageName by remember { mutableStateOf("") }
     var isContentFocused by remember { mutableStateOf(false) }
@@ -99,6 +108,14 @@ fun WriteScreen(
         uri?.let { viewModel.saveFileAs(it) }
         // TODO Severe bug to be fixed, which will lead to coroutine cancellation.
         navController.navigateTo(Destinations.HOME_ROUTE)
+    }
+
+    val savePdf = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/pdf")) { uri ->
+        uri?.let {
+            Log.d(TAG, "WriteScreen: returned uri for saving pdf: $it")
+            UriUtils.prepareUri(it)
+            asPdf = true
+        }
     }
 
     val selectPicture = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
@@ -384,57 +401,19 @@ fun WriteScreen(
                 actions = {
                     if (uiState.isReadOnly) {
                         IconButton(onClick = {
-                            // share
-//                            if (viewModel.targetId == -1) {
-//                                // already passed uri validation test
-//                                if (!UriUtils.isUriValid) {
-//                                    // craft
-//                                    Toast.makeText(
-//                                        context,
-//                                        "Please fisrt store the file via saveAs or stash.",
-//                                        Toast.LENGTH_SHORT).show()
-//                                }
-//                                else {
-//                                    Log.d(TAG, "WriteScreen: Shared Uri: ${UriUtils.uri}")
-//                                    // Some apps cannot recognize uri returned from uri. However this isn't my fault ;)
-//                                    // e.g. content://com.android.providers.downloads.documents/document/442
-//                                    val shareIntent = Intent().apply {
-//                                        action = Intent.ACTION_SEND
-//                                        putExtra(Intent.EXTRA_STREAM, UriUtils.uri)
-//                                        type = "text/*"
-//                                    }
-//                                    shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION.or(Intent.FLAG_GRANT_WRITE_URI_PERMISSION))
-//                                    context.startActivity(Intent.createChooser(shareIntent, "Share your thoughts!"))
-//                                }
-//                            }
-//                            else {
-//                                // find if uri exists.
-//                                scope.launch {
-//                                    val uri = withContext(Dispatchers.IO) {
-//                                        viewModel.getUri()
-//                                    }
-//                                    if (uri == null) {
-//                                        Toast.makeText(
-//                                            context,
-//                                            "Please fisrt store the file via saveAs or stash.",
-//                                            Toast.LENGTH_SHORT).show()
-//                                    }
-//                                    else {
-//                                        Log.d(TAG, "WriteScreen: Shared Uri: $uri")
-//                                        // 这样提供的uri是file类型
-//                                        // e.g. file:///storage/emulated/0/Android/data/com.eynnzerr.memorymarkdown/fileshi.md
-//                                        val shareIntent = Intent().apply {
-//                                            action = Intent.ACTION_SEND
-//                                            putExtra(Intent.EXTRA_STREAM, uri)
-//                                            type = "text/*"
-//                                        }
-//                                        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION.or(Intent.FLAG_GRANT_WRITE_URI_PERMISSION))
-//                                        context.startActivity(Intent.createChooser(shareIntent, "Share your thoughts!"))
-//                                    }
-//                                }
-//                            }
+                            // Save as pdf
+                            // call chain: click(this) -> launch and callback(savePdf) -> update(editText) -> saveAsPdf(viewModel)
+                            savePdf.launch(viewModel.uiState.value.title + ".pdf")
+                        }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.pdf),
+                                contentDescription = null
+                            )
+                        }
 
-                            // new version of sharing: Able to avoid saving before sharing.
+                        IconButton(onClick = {
+
+                            // share
                             val uri = viewModel.cacheFile()
                             if (uri == null) {
                                 Toast.makeText(
@@ -444,7 +423,6 @@ fun WriteScreen(
                             }
                             else {
                                 Log.d(TAG, "WriteScreen: Shared Uri: $uri")
-                                // 这样提供的uri是file类型
                                 // e.g. file:///storage/emulated/0/Android/data/com.eynnzerr.memorymarkdown/fileshi.md
                                 val shareIntent = Intent().apply {
                                     action = Intent.ACTION_SEND
@@ -548,15 +526,14 @@ fun WriteScreen(
                 Icon(
                     painter = painterResource(id = if (uiState.isReadOnly) R.drawable.edit else R.drawable.eye_open),
                     contentDescription = null,
-                    // tint = IconColor
                 )
             }
         }
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
                 .padding(it)
+                .fillMaxSize()
         ) {
             TextField(
                 value = uiState.title,
@@ -596,6 +573,13 @@ fun WriteScreen(
                         .verticalScroll(scrollState),
                     update = { textView ->
                         markwon.setMarkdown(textView, uiState.content)
+
+                        // observe asPdf
+                        if (asPdf) {
+                            viewModel.saveAsPdf(textView)
+                            asPdf = false
+                            Toast.makeText(context, "Save pdf successfully.", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 )
             }
@@ -604,6 +588,10 @@ fun WriteScreen(
                     factory = { context ->
                         EditText(context).apply {
                             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+                            isVerticalScrollBarEnabled = true
+                            isScrollbarFadingEnabled = true
+                            movementMethod = ScrollingMovementMethod.getInstance()
+
                             gravity = Gravity.TOP.or(Gravity.START)
                             setHintTextColor(textColor.copy(alpha=0.4f).toArgb())
                             setTextColor(textColor.toArgb())
@@ -635,21 +623,36 @@ fun WriteScreen(
                                 }
 
                                 override fun afterTextChanged(s: Editable?) {
-                                    //if (editText.text.toString() != uiState.content) // avoid dead loop
                                     viewModel.updateContent(s.toString())
-                                    Log.d(TAG, "afterTextChanged: content changed to ${viewModel.uiState.value.content}")
                                     contentChanged = true
                                 }
                             })
 
-                            setOnFocusChangeListener { _, hasFocus -> isContentFocused = hasFocus }
+                            // Disallow focus requesting when scrolling to prevent UI stuck
+//                            setOnTouchListener { _, event ->
+//                                when (event.action.and(MotionEvent.ACTION_MASK)) {
+//                                    MotionEvent.ACTION_MOVE -> {
+//                                        isFocusable = false
+//                                    }
+//                                    MotionEvent.ACTION_UP -> {
+//                                        isFocusable = true
+//                                        isFocusableInTouchMode = true
+//                                    }
+//                                }
+//                                return@setOnTouchListener false
+//                            }
 
-                            requestFocus()
+                            setOnFocusChangeListener { _, hasFocus ->
+                                Log.d(TAG, "WriteScreen:  editText gets focus? $hasFocus")
+                                isContentFocused = hasFocus
+                            }
+                            if (uiState.content == "") requestFocus()
                         }
                     },
                     modifier = Modifier
-                        .padding(13.dp)
-                        .verticalScroll(scrollState),
+                        .padding(13.dp),
+                        //.fillMaxSize()
+                        //.verticalScroll(scrollState),
                     update = { editText ->
                         // observe optionId
                         if (optionId != 0) {

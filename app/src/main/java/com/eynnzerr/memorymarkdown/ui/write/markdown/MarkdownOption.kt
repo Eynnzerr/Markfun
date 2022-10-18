@@ -16,7 +16,7 @@ enum class MarkdownOption(val text: String) {
     CODEBLOCK("\n```\n"),
     QUOTE("\n> "),
     DIVIDER("\n---\n"),
-    HYPERLINK("()[]"),
+    HYPERLINK("[]()"),
     TASKLIST("\n- [ ] "),
     ORDEREDLIST(""),
     UNORDEREDLIST("\n- "),

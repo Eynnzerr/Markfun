@@ -1,8 +1,12 @@
 package com.eynnzerr.memorymarkdown.ui.write
 
 import android.annotation.SuppressLint
+import android.graphics.Rect
+import android.graphics.pdf.PdfDocument
+import android.graphics.pdf.PdfDocument.PageInfo
 import android.net.Uri
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.core.content.FileProvider
 import androidx.documentfile.provider.DocumentFile
@@ -106,19 +110,6 @@ class WriteViewModel @Inject constructor(
         }
     }
 
-    private suspend fun importMarkdown(title: String, text: String, uri: Uri) {
-        // import external file for further operation, since WRITE permission is not requested
-        repository.insertMarkdown(
-            MarkdownData(
-                title = title,
-                content = text,
-                uri = uri,
-                status = MarkdownData.STATUS_EXTERNAL,
-                isStarred = MarkdownData.NOT_STARRED
-            )
-        )
-    }
-
     fun saveMarkdown() {
         // Must use main dispatcher to ensure that homeScreen collect data only after new data has been inserted.
         viewModelScope.launch {
@@ -170,6 +161,25 @@ class WriteViewModel @Inject constructor(
         }
         Log.d(TAG, "saveFileAs: Done.")
         Toast.makeText(CPApplication.context, "Successfully saved.", Toast.LENGTH_SHORT).show()
+    }
+
+    fun saveAsPdf(content: View) {
+        UriUtils.uri?.let {
+            val document = PdfDocument()
+            val pageInfo = PageInfo
+                .Builder(content.width + 60, content.height + 120, 1)
+                .setContentRect(Rect(30, 60, content.width + 30, content.height + 60))  // TODO DIY padding for users
+                .create()
+
+            val page = document.startPage(pageInfo)
+            content.draw(page.canvas)
+            document.finishPage(page)
+
+            val output = CPApplication.context.contentResolver.openOutputStream(it)
+            document.writeTo(output)
+
+            document.close()
+        }
     }
 
     // If automated backup is allowed by user, export markdown file to app external file directory.
