@@ -15,6 +15,7 @@ A simple mobile markdown reader/editor app made by Jetpack compose at leisure.
 - Open files(.md, .txt, .html) any time and any where via deep link/SAF without further permission request
 - Dynamic app theme color option with Material You palette
 - Allow sharing files with other apps
+- Support exporting as PDF
 
 ### ScreenShots
 <div align="center">
