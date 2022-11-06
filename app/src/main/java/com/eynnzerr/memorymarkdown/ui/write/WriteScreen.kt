@@ -31,6 +31,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -50,6 +51,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
 import com.eynnzerr.memorymarkdown.R
 import com.eynnzerr.memorymarkdown.utils.UriUtils
@@ -304,7 +306,7 @@ fun WriteScreen(
     }
 
     if (isDialogOpen) {
-        AlertDialog(
+       AlertDialog(
             onDismissRequest = { isDialogOpen = false },
             title = {},
             text = {
@@ -346,7 +348,6 @@ fun WriteScreen(
             dismissButton = {
                 Button(
                     onClick = {
-                        // removeCraft()
                         viewModel.emptyCraft()
                         isDialogOpen = false
 
@@ -551,7 +552,7 @@ fun WriteScreen(
                     unfocusedIndicatorColor = Color.Transparent,
                     disabledIndicatorColor = Color.Transparent
                 ),
-                maxLines = 1,
+                singleLine = true,
                 textStyle = MaterialTheme.typography.headlineLarge,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 readOnly = uiState.isReadOnly
@@ -586,11 +587,9 @@ fun WriteScreen(
             else {
                 AndroidView(
                     factory = { context ->
-                        EditText(context).apply {
+                        val child = EditText(context).apply {
                             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-                            isVerticalScrollBarEnabled = true
-                            isScrollbarFadingEnabled = true
-                            movementMethod = ScrollingMovementMethod.getInstance()
+                            setTextIsSelectable(true)
 
                             gravity = Gravity.TOP.or(Gravity.START)
                             setHintTextColor(textColor.copy(alpha=0.4f).toArgb())
@@ -628,31 +627,21 @@ fun WriteScreen(
                                 }
                             })
 
-                            // Disallow focus requesting when scrolling to prevent UI stuck
-//                            setOnTouchListener { _, event ->
-//                                when (event.action.and(MotionEvent.ACTION_MASK)) {
-//                                    MotionEvent.ACTION_MOVE -> {
-//                                        isFocusable = false
-//                                    }
-//                                    MotionEvent.ACTION_UP -> {
-//                                        isFocusable = true
-//                                        isFocusableInTouchMode = true
-//                                    }
-//                                }
-//                                return@setOnTouchListener false
-//                            }
-
+                            isFocusableInTouchMode = true
                             setOnFocusChangeListener { _, hasFocus ->
-                                Log.d(TAG, "WriteScreen:  editText gets focus? $hasFocus")
                                 isContentFocused = hasFocus
                             }
                             if (uiState.content == "") requestFocus()
                         }
+
+                        ScrollableEditText(context).apply {
+                            layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+                            addView(child)
+                            this.child = child
+                        }
                     },
                     modifier = Modifier
                         .padding(13.dp),
-                        //.fillMaxSize()
-                        //.verticalScroll(scrollState),
                     update = { editText ->
                         // observe optionId
                         if (optionId != 0) {
@@ -675,7 +664,7 @@ fun WriteScreen(
                                 else -> MarkdownOption.NONE
                             }
                             optionId = 0 // Consume option event to avoid dead loop: click -> update -> addOption -> textChanged -> updateContent -> update
-                            editText.addOption(option) // will call onTextChanged()
+                            editText.child.addOption(option) // will call onTextChanged()
                         }
                     }
                 )

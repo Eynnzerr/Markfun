@@ -194,7 +194,6 @@ fun HomeScreen(
                             color = MaterialTheme.colorScheme.primaryContainer,
                             fontSize = 20.sp
                         )
-                        // 本地创建 收藏 最近打开 最近删除
                         DrawerItem(
                             imageVector = Icons.Filled.Source,
                             title = stringResource(id = R.string.drawer_created),
@@ -447,90 +446,65 @@ fun HomeScreen(
                 }
             },
             bottomBar = {
-                AnimatedVisibility(
+                FakeBottomSheet(
                     visible = bottomSheetExpanded,
-                    enter = fadeIn(animationSpec = spring(stiffness = Spring.StiffnessMedium)),
-                    exit = fadeOut(animationSpec = spring(stiffness = Spring.StiffnessMedium))
+                    onDismiss = { bottomSheetExpanded = false }
                 ) {
-                    Box(
+                    Surface(
                         modifier = Modifier
                             .fillMaxSize()
-                            .navigationBarsPadding(),
-                        contentAlignment = Alignment.BottomStart
+                            .padding(top = 24.dp),
+                        shape = RoundedCornerShape(topEndPercent = 15, topStartPercent = 15),
+                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
                     ) {
-                        Canvas(
-                            Modifier
-                                .fillMaxSize()
-                                .clickable(
-                                    indication = null,
-                                    interactionSource = remember {
-                                        MutableInteractionSource()
-                                    }
-                                ) { bottomSheetExpanded = false }
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.Start,
+                            verticalArrangement = Arrangement.SpaceBetween
                         ) {
-                            drawRect(Color.Black, alpha = 0.4f)
-                        }
-                        
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .fillMaxHeight(0.35f)
-                        ) {
-                            Surface(
-                                modifier = Modifier
-                                    .fillMaxSize(),
-                                shape = RoundedCornerShape(topEndPercent = 15, topStartPercent = 15)
+                            // open，star/unstar，remove, share, export
+                            BottomSheetItem(
+                                imageVector = Icons.Outlined.Edit,
+                                title = stringResource(R.string.home_bottom_open)
                             ) {
-                                Column(
-                                    modifier = Modifier.fillMaxSize(),
-                                    horizontalAlignment = Alignment.Start,
-                                    verticalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    // open，star/unstar，remove, share, export
-                                    BottomSheetItem(
-                                        imageVector = Icons.Outlined.Edit,
-                                        title = stringResource(R.string.home_bottom_open)
-                                    ) {
-                                        viewModel.tempData.uri?.let { uri ->
-                                            UriUtils.prepareUri(uri)
-                                        }
-                                        navController.navigateTo(Destinations.WRITE_ROUTE + "/${viewModel.tempData.id}")
-                                        bottomSheetExpanded = false
-                                    }
-                                    BottomSheetItem(
-                                        imageVector = Icons.Outlined.StarBorder,
-                                        title = stringResource(id = R.string.home_bottom_star)
-                                    ) {
-                                        viewModel.updateMarkdown(
-                                            viewModel.tempData.copy(isStarred = (viewModel.tempData.isStarred-1).absoluteValue)
-                                        )
-                                        bottomSheetExpanded = false
-                                    }
-                                    BottomSheetItem(
-                                        imageVector = Icons.Outlined.Delete,
-                                        title = stringResource(id = R.string.home_bottom_remove)
-                                    ) {
-                                        bottomSheetExpanded = false
-                                        if (uiState.homeType == HomeType.ARCHIVED) {
-                                            openDeleteDialog = true
-                                        }
-                                        else {
-                                            viewModel.deleteMarkdown(viewModel.tempData)
-                                        }
-                                    }
-                                    BottomSheetItem(
-                                        imageVector = Icons.Outlined.Share,
-                                        title = stringResource(id = R.string.home_bottom_share)
-                                    ) {
-                                        Toast.makeText(context, "Open file in read mode to share.", Toast.LENGTH_SHORT).show()
-                                    }
-                                    BottomSheetItem(
-                                        imageVector = Icons.Outlined.SaveAs,
-                                        title = stringResource(id = R.string.home_bottom_export)
-                                    ) {
-                                        Toast.makeText(context, "Open file in write mode to export.", Toast.LENGTH_SHORT).show()
-                                    }
+                                viewModel.tempData.uri?.let { uri ->
+                                    UriUtils.prepareUri(uri)
                                 }
+                                navController.navigateTo(Destinations.WRITE_ROUTE + "/${viewModel.tempData.id}")
+                                bottomSheetExpanded = false
+                            }
+                            BottomSheetItem(
+                                imageVector = Icons.Outlined.StarBorder,
+                                title = stringResource(id = R.string.home_bottom_star)
+                            ) {
+                                viewModel.updateMarkdown(
+                                    viewModel.tempData.copy(isStarred = (viewModel.tempData.isStarred-1).absoluteValue)
+                                )
+                                bottomSheetExpanded = false
+                            }
+                            BottomSheetItem(
+                                imageVector = Icons.Outlined.Delete,
+                                title = stringResource(id = R.string.home_bottom_remove)
+                            ) {
+                                bottomSheetExpanded = false
+                                if (uiState.homeType == HomeType.ARCHIVED) {
+                                    openDeleteDialog = true
+                                }
+                                else {
+                                    viewModel.deleteMarkdown(viewModel.tempData)
+                                }
+                            }
+                            BottomSheetItem(
+                                imageVector = Icons.Outlined.Share,
+                                title = stringResource(id = R.string.home_bottom_share)
+                            ) {
+                                Toast.makeText(context, "Open file in read mode to share.", Toast.LENGTH_SHORT).show()
+                            }
+                            BottomSheetItem(
+                                imageVector = Icons.Outlined.SaveAs,
+                                title = stringResource(id = R.string.home_bottom_export)
+                            ) {
+                                Toast.makeText(context, "Open file in write mode to export.", Toast.LENGTH_SHORT).show()
                             }
                         }
                     }
@@ -581,95 +555,6 @@ fun HomeScreen(
             }
         }
     }
-}
-
-@Composable
-private fun HomeBarTitle(type: HomeType) {
-    val title = when (type) {
-        HomeType.CREATED -> stringResource(id = R.string.title_created)
-        HomeType.VIEWED -> stringResource(id = R.string.title_viewed)
-        HomeType.STARRED -> stringResource(id = R.string.drawer_starred)
-        HomeType.ARCHIVED -> stringResource(id = R.string.drawer_archived)
-    }
-    Text(
-        text = title,
-        style = MaterialTheme.typography.titleLarge,
-        // modifier = Modifier.padding(horizontal = 12.dp)
-    )
-}
-
-@Composable
-private fun Logo() {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Icon(
-            modifier = Modifier.size(100.dp),
-            painter = painterResource(id = R.drawable.markdown_line),
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primaryContainer
-        )
-        Text(
-            text = stringResource(id = R.string.home_hint),
-            fontSize = 15.sp,
-            textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.primaryContainer,
-            fontWeight = FontWeight.Bold
-        )
-    }
-}
-
-@Composable
-private fun PageMenuItem(
-    title: String,
-    selected: Boolean,
-    imageVector: ImageVector,
-    onClick: () -> Unit) {
-
-    val color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-
-    DropdownMenuItem(
-        text = {
-            Text(
-                text = title,
-                color = color
-            )
-        },
-        onClick = onClick,
-        leadingIcon = {
-            Icon(
-                imageVector = imageVector,
-                contentDescription = null,
-                tint = color
-            )
-        }
-    )
-}
-
-@ExperimentalMaterial3Api
-@Composable
-private fun OrderMenuItem(title: String, selected: Boolean, onClick: () -> Unit) {
-    DropdownMenuItem(
-        text = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 6.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(text = title)
-                RadioButton(
-                    selected = selected,
-                    onClick = onClick
-                )
-            }
-        },
-        onClick = onClick
-    )
 }
 
 val LazyListState.isScrolled: Boolean

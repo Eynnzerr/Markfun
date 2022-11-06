@@ -118,8 +118,11 @@ fun HomeListItem(
                         }
                     },
                     modifier = Modifier
-                        .padding(8.dp)
-                    // .clickable { onClick(data) }
+                        .padding(8.dp),
+                    update = { tv ->
+                        // Make sure to refresh data after returning from write screen for content last edited
+                        it.setMarkdown(tv, data.content)
+                    }
                 )
             }
         }

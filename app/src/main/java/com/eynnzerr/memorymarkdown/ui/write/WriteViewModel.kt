@@ -197,6 +197,10 @@ class WriteViewModel @Inject constructor(
                 val contentUri = FileProvider.getUriForFile(CPApplication.context, "com.eynnzerr.memorymarkdown.file_provider", mdFile)
                 repository.updateUriById(MarkDownUri(id = targetId, uri = contentUri))
                 writeContent(mdFile)
+                launch(Dispatchers.Main) {
+                    Log.d(TAG, "stashFile: toast")
+                    Toast.makeText(CPApplication.context, "Stash ${mdFile.name} successfully", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
@@ -229,7 +233,6 @@ class WriteViewModel @Inject constructor(
             flush()
             close()
         }
-        Toast.makeText(CPApplication.context, "Stash ${file.name} successfully", Toast.LENGTH_SHORT).show()
     }
 
     suspend fun getUri(): Uri? = repository.getDataById(targetId).first().uri

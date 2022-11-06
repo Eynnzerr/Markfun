@@ -87,6 +87,7 @@ class HomeViewModel @Inject constructor(
                         homeList = homeList.filter { data -> (data.isStarred == MarkdownData.IS_STARRED) and (data.status != MarkdownData.STATUS_ARCHIVED) }) }
                 }
                 HomeType.ARCHIVED -> {
+
                     _uiState.update { it.copy(
                         homeType = HomeType.ARCHIVED,
                         homeList = homeList.filter { data -> data.status == MarkdownData.STATUS_ARCHIVED }) }
