@@ -22,13 +22,8 @@ import com.eynnzerr.memorymarkdown.ui.theme.MemoryMarkdownTheme
 @ExperimentalAnimationApi
 @ExperimentalMaterial3Api
 @Composable
-fun MemoryApp() {
+fun MemoryApp(navHostController: NavHostController) {
     val themeState by MMKVUtils.themeState.collectAsState()
-    val navHostController = rememberNavController()
-
-//    val darkTheme = isSystemInDarkTheme()
-//    val markdownTextColor = if (darkTheme) Color.White.toArgb() else Color.Black.toArgb()
-//    val LocalMarkdownTextColor = compositionLocalOf { markdownTextColor }
 
     MemoryMarkdownTheme(
         //darkTheme = darkTheme,
@@ -40,9 +35,6 @@ fun MemoryApp() {
                     .fillMaxSize(),
                 color = MaterialTheme.colorScheme.surface
             ) {
-//                CompositionLocalProvider(LocalMarkdownTextColor provides markdownTextColor) {
-//                    NavGraph(navHostController)
-//                }
                 NavGraph(navHostController)
             }
         }

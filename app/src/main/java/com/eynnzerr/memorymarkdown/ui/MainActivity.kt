@@ -17,6 +17,8 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.eynnzerr.memorymarkdown.ui.theme.MemoryMarkdownTheme
 import com.eynnzerr.memorymarkdown.utils.UriUtils
 import com.tencent.mmkv.MMKV
@@ -32,18 +34,18 @@ var mainActivityReady = false
 @ExperimentalMaterial3Api
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    // To make navController accessible in onNewIntent()
+    private lateinit var navHostController: NavHostController
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         MMKV.initialize(this)
         setImmerseStatusBar(window)
-
-        if (intent.action == Intent.ACTION_VIEW) {
-            val uri = Uri.parse(intent.dataString)
-            UriUtils.prepareUri(uri)
-        }
+        handleIntent(intent)
 
         setContent {
-            MemoryApp()
+            navHostController = rememberNavController()
+            MemoryApp(navHostController)
         }
 
         val content = findViewById<View>(android.R.id.content)
@@ -65,6 +67,23 @@ class MainActivity : ComponentActivity() {
             }
         )
     }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        intent?.let {
+            setIntent(it)
+            handleIntent(it)
+        }
+        navHostController.handleDeepLink(intent)
+    }
+
+    private fun handleIntent(intent: Intent) {
+        if (intent.action == Intent.ACTION_VIEW) {
+            Log.d(TAG, "Receive deeplink uri: ${intent.dataString}")
+            val uri = Uri.parse(intent.dataString)
+            UriUtils.prepareUri(uri)
+        }
+    }
 }
 
 private fun setImmerseStatusBar(window: Window) {
@@ -83,7 +102,7 @@ private fun setImmerseStatusBar(window: Window) {
 @Composable
 fun DefaultPreview() {
     MemoryMarkdownTheme {
-        MemoryApp()
+        MemoryApp(rememberNavController())
     }
 }
 
