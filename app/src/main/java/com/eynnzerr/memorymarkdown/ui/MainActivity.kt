@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.View
 import android.view.ViewTreeObserver
 import android.view.Window
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.ExperimentalAnimationApi

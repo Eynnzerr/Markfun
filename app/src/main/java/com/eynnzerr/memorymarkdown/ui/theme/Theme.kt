@@ -20,7 +20,7 @@ import androidx.core.view.WindowCompat
 @Composable
 fun MemoryMarkdownTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     baseColor: Int = DEFAULT_COLOR,
     content: @Composable () -> Unit
 ) {

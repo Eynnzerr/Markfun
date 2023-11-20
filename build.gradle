@@ -9,8 +9,13 @@ buildscript {
         MMKV_version = "1.2.13"
         room_version = "2.4.2"
         retrofit_version = "2.9.0"
+        materialVersion = "1.7.0-alpha02"
     }
     repositories {
+        maven { setUrl("https://maven.aliyun.com/repository/public/") }
+        maven { setUrl("https://maven.aliyun.com/repository/google/") }
+        maven { setUrl("https://maven.aliyun.com/repository/gradle-plugin") }
+        maven { setUrl("https://maven.aliyun.com/repository/central/") }
         mavenCentral()
     }
     dependencies {

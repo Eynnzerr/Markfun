@@ -19,7 +19,10 @@ abstract class MarkdownDatabase: RoomDatabase() {
     abstract fun getDao(): MarkdownDao
 
     companion object {
+
         private const val databaseName = "eynnzerr-markdown"
+
+        @Volatile
         private var INSTANCE: MarkdownDatabase? = null
 
         @Synchronized

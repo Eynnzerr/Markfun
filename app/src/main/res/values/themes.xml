@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!--  App Theme  -->
-    <style name="Theme.MemoryMarkdown" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.MemoryMarkdown" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="windowNoTitle">true</item>
+    </style>
 
     <!--  SplashScreen Theme  -->
     <style name="Theme.MemoryMarkdown.SplashScreen" parent="Theme.SplashScreen">
         <item name="postSplashScreenTheme">@style/Theme.MemoryMarkdown</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_markdown_slogan</item>
+        <item name="android:windowNoTitle">true</item>
     </style>
 </resources>

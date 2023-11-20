@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.MediaStore
 import android.text.Editable
+import android.text.Spanned
 import android.text.TextWatcher
 import android.text.method.ScrollingMovementMethod
 import android.util.Log
@@ -62,6 +63,7 @@ import io.noties.markwon.editor.MarkwonEditorTextWatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.commonmark.node.Node
 import ru.noties.jlatexmath.swing.Icon
 import java.util.concurrent.Executors
 
@@ -567,6 +569,11 @@ fun WriteScreen(
                             setTextSize(TypedValue.COMPLEX_UNIT_SP, 18.5f)
                             setTextColor(textColor.toArgb())
                             markwon.setMarkdown(this, uiState.content)
+
+                            val node: Node = markwon.parse(uiState.content)
+                            val markdown: Spanned = markwon.render(node)
+                            markwon.setParsedMarkdown(this, markdown)
+
                         }
                     },
                     modifier = Modifier
